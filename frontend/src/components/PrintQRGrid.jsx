@@ -1,5 +1,5 @@
 import React from 'react';
-import QRCode from 'react-qr-code';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 
 export const PrintQRGrid = ({ items, onClose }) => {
   if (!items || items.length === 0) return null;
