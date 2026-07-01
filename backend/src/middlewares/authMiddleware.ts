@@ -56,8 +56,15 @@ export const requirePermission = (permissionName: string) => {
         include: { permission: true }
       });
 
-      const hasPerm = rolePerms.some(rp => rp.permission.name === permissionName);
-      if (!hasPerm) {
+      const userPerms = await prisma.userPermission.findMany({
+        where: { userId: req.user.id },
+        include: { permission: true }
+      });
+
+      const hasRolePerm = rolePerms.some(rp => rp.permission.name === permissionName);
+      const hasUserPerm = userPerms.some(up => up.permission.name === permissionName);
+
+      if (!hasRolePerm && !hasUserPerm) {
         return res.status(403).json({ error: `Forbidden: Missing permission '${permissionName}'` });
       }
       next();

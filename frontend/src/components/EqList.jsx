@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer } from 'lucide-react';
 import { LOCS } from '../constants';
 import { LocBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
+import { PrintQRGrid } from './PrintQRGrid';
 
 export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [searchParams] = useSearchParams();
@@ -17,10 +18,31 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 20;
 
+  const [selectedEqs, setSelectedEqs] = useState([]);
+  const [showPrint, setShowPrint] = useState(false);
+
   useEffect(() => {
     setQ(globalQ);
     setPage(1);
   }, [globalQ]);
+
+  const toggleSelection = (e, item) => {
+    e.stopPropagation();
+    setSelectedEqs(prev => prev.some(x => x.id === item.id) ? prev.filter(x => x.id !== item.id) : [...prev, item]);
+  };
+
+  const toggleAll = (e) => {
+    if (e.target.checked) {
+      const newSelected = [...selectedEqs];
+      paginated.forEach(item => {
+        if (!newSelected.some(x => x.id === item.id)) newSelected.push(item);
+      });
+      setSelectedEqs(newSelected);
+    } else {
+      const pageIds = paginated.map(p => p.id);
+      setSelectedEqs(prev => prev.filter(x => !pageIds.includes(x.id)));
+    }
+  };
 
   const cats = useMemo(() => [...new Set(eq.map(e => e.category))].sort(), [eq]);
 
@@ -48,6 +70,12 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           <p className="text-sm text-slate-400 mt-0.5">{filtered.length} equipamentos encontrados</p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedEqs.length > 0 && (
+            <button onClick={() => setShowPrint(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors shadow-sm animate-in zoom-in-95">
+              <Printer size={15}/> Imprimir Etiquetas ({selectedEqs.length})
+            </button>
+          )}
           <button onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border ${showFilters ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'}`}>
             <SlidersHorizontal size={15}/> Filtros
@@ -60,6 +88,8 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           )}
         </div>
       </div>
+
+      {showPrint && <PrintQRGrid items={selectedEqs} onClose={() => setShowPrint(false)} />}
 
       {showFilters && (
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex gap-3 flex-wrap animate-in slide-in-from-top-2">
@@ -94,6 +124,13 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           <table className="w-full text-sm text-left">
             <thead>
               <tr className="bg-slate-50 border-b border-gray-200">
+                <th className="px-4 py-3 text-left w-10">
+                  <input type="checkbox" 
+                    className="rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    onChange={toggleAll}
+                    checked={paginated.length > 0 && paginated.every(p => selectedEqs.some(x => x.id === p.id))}
+                  />
+                </th>
                 {["ID Interno","Descrição","Patrimônio","Categoria","Localização","Status",""].map(h => (
                   <th key={h} className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
                 ))}
@@ -102,9 +139,17 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
             <tbody className="divide-y divide-gray-50">
               {paginated.map(e => {
                 const l = e.currentLocation || 'almoxarifado';
+                const isSelected = selectedEqs.some(x => x.id === e.id);
                 return (
                   <tr key={e.id} onClick={() => onSelect(e)}
-                    className="hover:bg-amber-50 cursor-pointer transition-colors group">
+                    className={`cursor-pointer transition-colors group ${isSelected ? 'bg-amber-50/50' : 'hover:bg-amber-50'}`}>
+                    <td className="px-4 py-3 text-left" onClick={(ev) => ev.stopPropagation()}>
+                      <input type="checkbox" 
+                        className="rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                        checked={isSelected}
+                        onChange={(ev) => toggleSelection(ev, e)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-mono font-bold text-amber-600 text-sm">{e.id}</td>
                     <td className="px-4 py-3 min-w-[200px]">
                       <div className="font-semibold text-slate-800">{e.description}</div>

@@ -112,8 +112,8 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative pb-[64px] md:pb-0">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-6 justify-between shrink-0 shadow-sm z-10">
+      <main className="flex-1 flex flex-col overflow-hidden bg-slate-100 relative pb-[64px] md:pb-0">
+        <header className="h-16 bg-slate-900 md:bg-white border-b border-slate-800 md:border-gray-200 flex items-center px-4 md:px-6 justify-between shrink-0 shadow-sm z-10">
           <form onSubmit={handleSearch} className="relative flex-1 md:w-[400px] md:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -122,7 +122,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
               placeholder="Pesquisa Global..." 
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-slate-800 text-white md:bg-slate-100 md:text-slate-900 border-transparent rounded-lg text-sm focus:bg-slate-700 md:focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none placeholder:text-slate-500"
             />
           </form>
           <div className="hidden md:flex items-center gap-4 text-sm font-semibold text-slate-600 ml-4">
@@ -134,30 +134,30 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
         </div>
       </main>
 
-      {/* Bottom Navigation (Mobile Only - Floating Glassmorphism) */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 glass-dark rounded-2xl flex items-center justify-around h-[68px] z-30 pb-safe px-2 overflow-visible">
-        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'dashboard' ? 'text-blue-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+      {/* Bottom Navigation (Mobile Only - Amber Solid Theme) */}
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-amber-500 shadow-xl shadow-amber-500/30 rounded-2xl flex items-center justify-around h-[68px] z-30 pb-safe px-2 overflow-visible">
+        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'dashboard' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
           <Home size={22} className={activeNav === 'dashboard' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Início</span>
         </button>
-        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'list' ? 'text-emerald-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'list' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
           <Package size={22} className={activeNav === 'list' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Ativos</span>
         </button>
         
-        {/* Scanner Protagonista (Floating Glow) */}
+        {/* Scanner Protagonista (Floating Glow) - White button on amber background */}
         <div className="relative w-full h-full flex justify-center z-40">
-          <button onClick={() => navigate('/scanner')} className="absolute -top-6 bg-gradient-to-tr from-amber-500 to-orange-400 hover:from-amber-600 hover:to-orange-500 text-white p-3.5 rounded-full shadow-[0_8px_16px_rgba(245,158,11,0.4)] border-4 border-slate-900 transition-transform active:scale-90 glow-pulse">
-            <QrCode size={26} className="drop-shadow-md" />
+          <button onClick={() => navigate('/scanner')} className="absolute -top-6 bg-white hover:bg-slate-50 text-amber-500 p-3.5 rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.15)] border-4 border-amber-500 transition-transform active:scale-90 glow-pulse">
+            <QrCode size={26} className="drop-shadow-sm" />
           </button>
-          <span className="absolute bottom-2 text-[10px] font-bold text-slate-400">Scanner</span>
+          <span className="absolute bottom-2 text-[10px] font-bold text-amber-50">Scanner</span>
         </div>
 
-        <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+        <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
           <FileText size={22} className={activeNav === 'reports' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Relat.</span>
         </button>
-        <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-slate-500 hover:text-rose-400`}>
+        <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
           <Users size={22} />
           <span className="text-[10px] font-bold mt-1">Sair</span>
         </button>

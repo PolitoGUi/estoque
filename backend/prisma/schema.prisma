@@ -24,6 +24,7 @@ model Permission {
   description String?
 
   roles RolePermission[]
+  users UserPermission[]
 }
 
 model RolePermission {
@@ -61,6 +62,17 @@ model User {
   assignedIssues Issue[]  @relation("IssueAssignedTo")
   createdIssues  Issue[]  @relation("IssueCreatedBy")
   notifications  Notification[]
+  permissions  UserPermission[]
+}
+
+model UserPermission {
+  userId       Int
+  permissionId Int
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
 }
 
 model SystemSetting {
