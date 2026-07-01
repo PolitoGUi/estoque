@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: assettrack_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: assettrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: assettrack_backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://admin:adminpassword@db:5432/assettrack
+      JWT_SECRET: supersecretjwt
+    depends_on:
+      - db
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: assettrack_frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:

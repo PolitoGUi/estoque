@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g. "Administrador", "Operador"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // e.g. "equipment.create"
+  description String?
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  email               String    @unique
+  password            String
+  initials            String
+  isActive            Boolean   @default(true)
+  forcePasswordChange Boolean   @default(false)
+  lastLogin           DateTime?
+  roleId              Int
+  createdById         Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  role         Role   @relation(fields: [roleId], references: [id])
+  createdBy    User?  @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers User[] @relation("UserCreatedBy")
+
+  events       Event[]
+  observations Observation[]
+  auditLogs    AuditLog[]
+}
+
+model SystemSetting {
+  key   String @id
+  value String
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model Manufacturer {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  EquipmentModel EquipmentModel[]
+}
+
+model EquipmentModel {
+  id             Int           @id @default(autoincrement())
+  name           String        @unique
+  manufacturerId Int?
+  manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id])
+}
+
+model Location {
+  key   String @id
+  label String
+  color String @default("#64748b")
+}
+
+model Equipment {
+  id           String   @id // e.g. AT-000001
+  description  String
+  manufacturer String
+  model        String
+  category     String
+  patrimony    String?
+  serial       String?
+  qrCodeData   String?  @unique // Structural base for QR Code JSON
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  version      Int      @default(1) // For optimistic concurrency control
+
+  events       Event[]
+  observations Observation[]
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  equipmentId String
+  type        String // cadastro, entrada_estoque, transferencia, envio_campo, etc.
+  origin      String? // almoxarifado, campo, etc.
+  destination String?
+  userId      Int
+  notes       String?
+  timestamp   DateTime @default(now())
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Observation {
+  id          String   @id @default(uuid())
+  equipmentId String
+  category    String // defeito, teste, reparo, observacao
+  text        String
+  userId      Int
+  timestamp   DateTime @default(now())
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    Int?
+  action    String
+  resource  String
+  oldData   Json?
+  newData   Json?
+  ip        String?
+  userAgent String?
+  timestamp DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
