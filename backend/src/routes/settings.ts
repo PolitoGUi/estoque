@@ -87,9 +87,7 @@ router.post('/seed-test', async (req, res) => {
           category: i % 2 === 0 ? 'CLP' : 'Sensor',
           manufacturer: 'Siemens',
           model: 'Teste Model',
-          patrimony: `PAT-TEST-${i}`,
-          currentLocation: 'almoxarifado',
-          status: 'ativo'
+          patrimony: `PAT-TEST-${i}`
         }
       });
 
