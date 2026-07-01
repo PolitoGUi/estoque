@@ -3,15 +3,11 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Limpar tabelas
-  await prisma.auditLog.deleteMany();
-  await prisma.observation.deleteMany();
-  await prisma.event.deleteMany();
-  await prisma.equipment.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.rolePermission.deleteMany();
-  await prisma.permission.deleteMany();
-  await prisma.role.deleteMany();
+  const userCount = await prisma.user.count();
+  if (userCount > 0) {
+    console.log('Banco de dados já contém dados. Seed ignorado.');
+    return;
+  }
 
   // 1. Criar Permissões
   const perms = [

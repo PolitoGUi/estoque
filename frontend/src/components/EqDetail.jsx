@@ -198,8 +198,10 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
                 <button onClick={() => {
                   const canvas = document.getElementById(`qr-detail-${e.id}`);
                   if (!canvas) return;
-                  const win = window.open();
-                  win.document.write(`<img src="${canvas.toDataURL("image/png")}" onload="window.print();window.close();" />`);
+                  const win = window.open('', '_blank');
+                  if (!win) return alert('Bloqueador de pop-ups impediu a impressão.');
+                  win.document.write(`<html><body style="text-align:center;margin-top:2rem;"><img src="${canvas.toDataURL("image/png")}" onload="window.print();window.close();" /></body></html>`);
+                  win.document.close();
                 }} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
                   <Download size={16}/> Imprimir Etiqueta
                 </button>
