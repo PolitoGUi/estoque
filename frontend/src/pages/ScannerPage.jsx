@@ -133,26 +133,13 @@ export const ScannerPage = () => {
                   <div className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider my-3">Movimentar Físicamente</div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => handleQuickMove('campo')} disabled={loadingAction}
-                      className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-green-600/20 hover:border-green-500 border border-transparent p-4 rounded-xl transition-all">
-                      <MapPin size={24} className="text-green-500"/>
-                      <span className="text-sm font-bold">Em Campo</span>
-                    </button>
-                    <button onClick={() => handleQuickMove('laboratorio')} disabled={loadingAction}
-                      className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-purple-600/20 hover:border-purple-500 border border-transparent p-4 rounded-xl transition-all">
-                      <MapPin size={24} className="text-purple-500"/>
-                      <span className="text-sm font-bold">Laboratório</span>
-                    </button>
-                    <button onClick={() => handleQuickMove('almoxarifado')} disabled={loadingAction}
-                      className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-blue-600/20 hover:border-blue-500 border border-transparent p-4 rounded-xl transition-all">
-                      <MapPin size={24} className="text-blue-500"/>
-                      <span className="text-sm font-bold">Almoxarifado</span>
-                    </button>
-                    <button onClick={() => handleQuickMove('sucata')} disabled={loadingAction}
-                      className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-red-600/20 hover:border-red-500 border border-transparent p-4 rounded-xl transition-all">
-                      <MapPin size={24} className="text-red-500"/>
-                      <span className="text-sm font-bold">Sucatear</span>
-                    </button>
+                    {Object.keys(LOCS).filter(k => k !== (eq.currentLocation || "almoxarifado")).map(dest => (
+                      <button key={dest} onClick={() => handleQuickMove(dest)} disabled={loadingAction}
+                        className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 border border-transparent p-4 rounded-xl transition-all shadow-md group">
+                        <MapPin size={24} style={{ color: LOCS[dest].color }} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold">{LOCS[dest].label}</span>
+                      </button>
+                    ))}
                   </div>
 
                   <hr className="border-slate-700 my-4" />
