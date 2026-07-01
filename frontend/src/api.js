@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const apiURL = import.meta.env.VITE_API_URL || '/api';
+console.log('🔗 API URL configurada:', apiURL);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api' // Use VITE_API_URL in production, fallback to /api for local Docker
+  baseURL: apiURL // Use VITE_API_URL in production, fallback to /api for local Docker
 });
 
 // Request interceptor to attach JWT token
