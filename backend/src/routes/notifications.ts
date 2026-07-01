@@ -7,7 +7,7 @@ router.use(authenticate);
 
 // Get my notifications
 router.get('/', async (req: AuthRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = req.user!.id;
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
@@ -18,7 +18,7 @@ router.get('/', async (req: AuthRequest, res) => {
 
 // Mark as read
 router.post('/:id/read', async (req: AuthRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = req.user!.id;
   const { id } = req.params;
   
   await prisma.notification.updateMany({
@@ -31,7 +31,7 @@ router.post('/:id/read', async (req: AuthRequest, res) => {
 
 // Mark all as read
 router.post('/read-all', async (req: AuthRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = req.user!.id;
   
   await prisma.notification.updateMany({
     where: { userId, isRead: false },

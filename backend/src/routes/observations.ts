@@ -21,7 +21,7 @@ router.post('/', requirePermission('observation.create'), async (req: AuthReques
       equipmentId,
       category,
       text,
-      userId: Number(req.user?.userId)
+      userId: Number(req.user?.id)
     },
     include: { user: { select: { name: true, initials: true } } }
   });

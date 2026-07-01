@@ -10,7 +10,7 @@ router.post('/toggle', async (req: AuthRequest, res) => {
   const { equipmentId } = req.body;
   if (!equipmentId) return res.status(400).json({ error: 'equipmentId is required' });
 
-  const userId = req.user!.userId;
+  const userId = req.user!.id;
 
   const existing = await prisma.favorite.findUnique({
     where: {
@@ -35,7 +35,7 @@ router.post('/toggle', async (req: AuthRequest, res) => {
 
 // List favorites for current user
 router.get('/', async (req: AuthRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = req.user!.id;
   const favorites = await prisma.favorite.findMany({
     where: { userId },
     include: {

@@ -21,7 +21,7 @@ router.get('/', async (req: AuthRequest, res) => {
 // Create an issue
 router.post('/', async (req: AuthRequest, res) => {
   const { equipmentId, title, description, priority, deadline, assignedToId } = req.body;
-  const createdById = req.user!.userId;
+  const createdById = req.user!.id;
 
   const issue = await prisma.issue.create({
     data: {
@@ -68,7 +68,7 @@ router.put('/:id', async (req: AuthRequest, res) => {
   });
 
   // Notify if assignment changed
-  if (assignedToId && assignedToId !== existing.assignedToId && assignedToId !== req.user!.userId) {
+  if (assignedToId && assignedToId !== existing.assignedToId && assignedToId !== req.user!.id) {
     await prisma.notification.create({
       data: {
         userId: assignedToId,

@@ -60,7 +60,7 @@ router.post('/', requirePermission('equipment.move'), async (req: AuthRequest, r
           type,
           origin,
           destination,
-          userId: Number(req.user!.userId),
+          userId: Number(req.user!.id),
           notes
         },
         include: { user: { select: { name: true, initials: true } } }
