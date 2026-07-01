@@ -30,6 +30,12 @@ export const HomeApp = () => {
   }, [view]);
 
   useEffect(() => {
+    if (reqView && reqView !== view) {
+      setView(reqView);
+    }
+  }, [reqView]);
+
+  useEffect(() => {
     if (requestedEq && eq.length > 0) {
       const target = eq.find(e => e.id === requestedEq);
       if (target) {
