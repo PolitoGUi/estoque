@@ -46,6 +46,16 @@ export const HomeApp = () => {
     reloadAll();
   });
 
+  // Mantém o item selecionado atualizado se houver mudanças em tempo real
+  useEffect(() => {
+    if (selEq && eq.length > 0) {
+      const updated = eq.find(e => e.id === selEq.id);
+      if (updated) {
+        setSelEq(updated);
+      }
+    }
+  }, [eq]);
+
   useEffect(() => {
     loadEquipments();
   }, [view]);
