@@ -15,7 +15,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const activeNav = view === "detail" ? "list" : view;
-  const isAdmin = user?.role?.name === 'Administrador';
+  const isAdmin = user?.role === 'Administrador' || user?.role?.name === 'Administrador';
 
   const handleSearch = (e) => {
     e.preventDefault();
