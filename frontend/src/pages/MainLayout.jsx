@@ -31,7 +31,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           </div>
           <div className="text-xs text-slate-500 mt-1">Industrial V2.6</div>
         </div>
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto sidebar-scroll">
           {NAV.map(n => (
             <button key={n.k} onClick={() => { 
                 navigate(`/?view=${n.k}`);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MainLayout } from './MainLayout';
 import api from '../api';
+import { Modal } from '../components/Modal';
 import { Database, Settings, Layers, Folder, Download, Upload, Trash2, Plus, Edit2, MapPin } from 'lucide-react';
 
 export const SettingsPage = () => {
@@ -39,8 +40,20 @@ export const SettingsPage = () => {
     }
   }, [data.system]);
 
-  const handleBackupExport = () => {
-    window.open(`${api.defaults.baseURL}/backup/export`, '_blank');
+  const handleBackupExport = async () => {
+    try {
+      alert("Gerando backup, aguarde... (Isso pode levar alguns segundos)");
+      const res = await api.get('/backup/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `backup_${new Date().toISOString().slice(0,10)}.sql`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch(err) {
+      alert("Erro ao exportar backup: " + (err.response?.data?.error || err.message));
+    }
   };
 
   const handleBackupImport = async (e) => {
@@ -128,6 +141,34 @@ export const SettingsPage = () => {
     </div>
   );
 
+  const [taxonomyModal, setTaxonomyModal] = useState({ open: false, type: null, title: '' });
+  const [taxInput, setTaxInput] = useState('');
+  
+  const handleCreateTaxonomy = async (e) => {
+    e.preventDefault();
+    if (!taxInput.trim()) return;
+    try {
+      const endpointMap = {
+        'category': '/settings/categories',
+        'manufacturer': '/settings/manufacturers',
+        'model': '/settings/models',
+        'location': '/settings/locations',
+      };
+      
+      const payload = taxonomyModal.type === 'location' 
+        ? { key: taxInput.toLowerCase().replace(/\s+/g, '-'), label: taxInput }
+        : { name: taxInput };
+        
+      await api.post(endpointMap[taxonomyModal.type], payload);
+      alert('Item cadastrado com sucesso!');
+      setTaxonomyModal({ open: false, type: null, title: '' });
+      setTaxInput('');
+      loadSettings();
+    } catch(err) {
+      alert("Erro ao criar: " + (err.response?.data?.error || err.message));
+    }
+  };
+
   const renderTable = (items, columns, entity) => (
     <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden bg-white">
       <table className="w-full text-sm text-left">
@@ -188,25 +229,37 @@ export const SettingsPage = () => {
                 {activeTab === 'system' && renderSystemTab()}
                 {activeTab === 'categories' && (
                   <div>
-                    <div className="flex justify-between items-center"><h3 className="text-lg font-bold">Categorias</h3><button className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded"><Plus size={16}/>Nova</button></div>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold">Categorias</h3>
+                      <button onClick={() => setTaxonomyModal({ open: true, type: 'category', title: 'Nova Categoria' })} className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded hover:bg-amber-600 transition-colors"><Plus size={16}/>Nova</button>
+                    </div>
                     {renderTable(data.categories, [{k: 'name', l: 'Nome'}], 'category')}
                   </div>
                 )}
                 {activeTab === 'manufacturers' && (
                   <div>
-                    <div className="flex justify-between items-center"><h3 className="text-lg font-bold">Fabricantes</h3><button className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded"><Plus size={16}/>Nova</button></div>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold">Fabricantes</h3>
+                      <button onClick={() => setTaxonomyModal({ open: true, type: 'manufacturer', title: 'Novo Fabricante' })} className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded hover:bg-amber-600 transition-colors"><Plus size={16}/>Nova</button>
+                    </div>
                     {renderTable(data.manufacturers, [{k: 'name', l: 'Nome'}], 'manufacturer')}
                   </div>
                 )}
                 {activeTab === 'models' && (
                   <div>
-                    <div className="flex justify-between items-center"><h3 className="text-lg font-bold">Modelos</h3><button className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded"><Plus size={16}/>Novo</button></div>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold">Modelos</h3>
+                      <button onClick={() => setTaxonomyModal({ open: true, type: 'model', title: 'Novo Modelo' })} className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded hover:bg-amber-600 transition-colors"><Plus size={16}/>Novo</button>
+                    </div>
                     {renderTable(data.models, [{k: 'name', l: 'Nome'}], 'model')}
                   </div>
                 )}
                 {activeTab === 'locations' && (
                   <div>
-                    <div className="flex justify-between items-center"><h3 className="text-lg font-bold">Locais</h3><button className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded"><Plus size={16}/>Novo</button></div>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold">Locais</h3>
+                      <button onClick={() => setTaxonomyModal({ open: true, type: 'location', title: 'Novo Local' })} className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded hover:bg-amber-600 transition-colors"><Plus size={16}/>Novo</button>
+                    </div>
                     {renderTable(data.locations, [{k: 'label', l: 'Nome do Local'}, {k: 'key', l: 'Identificador (Key)'}], 'location')}
                   </div>
                 )}
@@ -215,6 +268,22 @@ export const SettingsPage = () => {
           </div>
         </div>
       </div>
+      
+      {taxonomyModal.open && (
+        <Modal title={taxonomyModal.title} onClose={() => setTaxonomyModal({ open: false, type: null, title: '' })}>
+          <form onSubmit={handleCreateTaxonomy} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Nome</label>
+              <input required autoFocus value={taxInput} onChange={e => setTaxInput(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <button type="button" onClick={() => setTaxonomyModal({ open: false, type: null, title: '' })} className="flex-1 py-2 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+              <button type="submit" className="flex-1 py-2 font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors">Salvar Item</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </MainLayout>
   );
 };
