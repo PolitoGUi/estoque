@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../prismaClient';
+import { authenticate } from '../middlewares/authMiddleware';
 
 const router = Router();
 
@@ -49,8 +50,14 @@ router.post('/change-password', authenticate, async (req: any, res: any) => {
   const { oldPassword, newPassword } = req.body;
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
-  if (!user || user.password !== oldPassword) {
-    return res.status(400).json({ error: 'Senha atual incorreta' });
+  if (!user) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+
+  if (!user.forcePasswordChange) {
+    if (user.password !== oldPassword) {
+      return res.status(400).json({ error: 'Senha atual incorreta' });
+    }
   }
 
   await prisma.user.update({
