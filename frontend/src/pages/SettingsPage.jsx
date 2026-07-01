@@ -85,6 +85,23 @@ export const SettingsPage = () => {
         </button>
         <input type="file" className="hidden" ref={fileInputRef} onChange={handleBackupImport} accept=".sql" />
       </div>
+
+      <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2 mt-8 pt-4">Ambiente de Testes</h3>
+      <div className="flex gap-4">
+        <button onClick={async () => {
+          if (!window.confirm('Isso vai adicionar 10 equipamentos fictícios e várias movimentações no banco. Continuar?')) return;
+          try {
+            alert('Gerando dados... Aguarde.');
+            await api.post('/settings/seed-test');
+            alert('Dados de teste gerados com sucesso!');
+            window.location.reload();
+          } catch (err) {
+            alert('Erro ao gerar dados de teste.');
+          }
+        }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 shadow-sm transition-colors">
+          <Database size={16} /> Gerar Dados de Teste (Mock)
+        </button>
+      </div>
     </div>
   );
 

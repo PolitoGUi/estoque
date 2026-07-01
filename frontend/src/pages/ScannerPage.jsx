@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useState } from 'react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ArrowRight, Activity, MapPin, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -13,37 +13,25 @@ export const ScannerPage = () => {
   const [loadingAction, setLoadingAction] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner('reader', {
-      qrbox: { width: 250, height: 250 },
-      fps: 5,
-    });
-
-    scanner.render(
-      async (result) => {
-        scanner.clear();
-        try {
-          let parsed;
-          try {
-            parsed = JSON.parse(result);
-          } catch (e) {
-            parsed = { id: result };
-          }
-          if (!parsed.id) throw new Error("QR Code inválido.");
-          
-          setScanResult(parsed);
-          fetchEq(parsed.id);
-        } catch (err) {
-          setError(err.message);
-        }
-      },
-      (err) => {}
-    );
-
-    return () => {
-      scanner.clear().catch(console.error);
-    };
-  }, []);
+  const handleScan = (detectedCodes) => {
+    if (!detectedCodes || detectedCodes.length === 0) return;
+    const result = detectedCodes[0].rawValue;
+    
+    try {
+      let parsed;
+      try {
+        parsed = JSON.parse(result);
+      } catch (e) {
+        parsed = { id: result };
+      }
+      if (!parsed.id) throw new Error("QR Code inválido.");
+      
+      setScanResult(parsed);
+      fetchEq(parsed.id);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const fetchEq = async (id) => {
     try {
@@ -95,7 +83,14 @@ export const ScannerPage = () => {
       <div className="flex-1 p-4 flex flex-col items-center justify-center overflow-y-auto">
         {!scanResult ? (
           <div className="w-full max-w-sm">
-            <div id="reader" className="bg-white rounded-lg overflow-hidden text-black shadow-2xl border-4 border-slate-800"></div>
+            <div className="bg-white rounded-lg overflow-hidden text-black shadow-2xl border-4 border-slate-800">
+              <Scanner
+                onScan={handleScan}
+                onError={(err) => setError(err?.message || "Erro na câmera")}
+                components={{ audio: false, finder: true }}
+                styles={{ container: { width: '100%', height: '100%' } }}
+              />
+            </div>
             {error && <p className="text-red-500 text-center mt-4 text-sm font-semibold">{error}</p>}
             <p className="text-slate-400 text-center mt-6 text-sm flex items-center justify-center gap-2">
               <Search size={16}/> Aponte a câmera para a etiqueta do equipamento

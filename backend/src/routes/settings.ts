@@ -72,4 +72,61 @@ router.use('/manufacturers', createCrud('Manufacturer', prisma.manufacturer));
 router.use('/models', createCrud('EquipmentModel', prisma.equipmentModel));
 router.use('/locations', createCrud('Location', prisma.location));
 
+router.post('/seed-test', async (req, res) => {
+  try {
+    const adminUser = await prisma.user.findFirst();
+    if (!adminUser) return res.status(400).json({ error: 'Nenhum usuário encontrado.' });
+
+    for (let i = 1; i <= 10; i++) {
+      const eqId = `TEST-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+      
+      await prisma.equipment.create({
+        data: {
+          id: eqId,
+          description: `Equipamento de Teste ${i}`,
+          category: i % 2 === 0 ? 'CLP' : 'Sensor',
+          manufacturer: 'Siemens',
+          model: 'Teste Model',
+          patrimony: `PAT-TEST-${i}`,
+          currentLocation: 'almoxarifado',
+          status: 'ativo'
+        }
+      });
+
+      // Se for os primeiros 3 equipamentos, adiciona ociosidade (evento antigo)
+      const isOcioso = i <= 3;
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 35); // 35 dias atrás
+
+      await prisma.event.create({
+        data: {
+          equipmentId: eqId,
+          type: 'entrada_estoque',
+          origin: 'externo',
+          destination: 'almoxarifado',
+          userId: adminUser.id,
+          timestamp: isOcioso ? oldDate : new Date(),
+          notes: isOcioso ? 'Entrada antiga (Para testar ociosidade)' : 'Entrada recente'
+        }
+      });
+      
+      // Cria também uma observação de teste
+      if (i % 2 === 0) {
+        await prisma.observation.create({
+          data: {
+            equipmentId: eqId,
+            category: 'observacao',
+            text: `Observação gerada automaticamente para ${eqId}`,
+            userId: adminUser.id,
+            timestamp: new Date()
+          }
+        });
+      }
+    }
+    res.json({ message: 'Dados de teste injetados com sucesso!' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
