@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2 } from 'lucide-react';
 import api from '../api';
 import { LOCS, OBS_CATS } from '../constants';
@@ -192,6 +193,7 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
                   document.body.appendChild(downloadLink);
                   downloadLink.click();
                   document.body.removeChild(downloadLink);
+                  toast.success("Download iniciado.");
                 }} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700">
                   <Download size={16}/> Baixar PNG
                 </button>
@@ -199,10 +201,46 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
                   const canvas = document.getElementById(`qr-detail-${e.id}`);
                   if (!canvas) return;
                   const win = window.open('', '_blank');
-                  if (!win) return alert('Bloqueador de pop-ups impediu a impressão.');
-                  win.document.write(`<html><body style="text-align:center;margin-top:2rem;"><img src="${canvas.toDataURL("image/png")}" onload="window.print();window.close();" /></body></html>`);
+                  if (!win) return toast.error('Bloqueador de pop-ups impediu a impressão.');
+                  
+                  const html = `
+                    <html>
+                      <head>
+                        <title>Etiqueta ${e.id}</title>
+                        <style>
+                          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; background: #f8fafc; }
+                          .label-container { width: 100%; max-width: 90mm; background: #fff; border: 2px solid #000; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 16px; box-sizing: border-box; page-break-inside: avoid; }
+                          .qr-col { flex-shrink: 0; }
+                          .qr-col img { width: 90px; height: 90px; display: block; }
+                          .info-col { flex: 1; min-width: 0; }
+                          .info-id { font-size: 22px; font-weight: 900; margin: 0 0 4px 0; letter-spacing: -0.5px; color: #000; }
+                          .info-desc { font-size: 13px; font-weight: 700; margin: 0 0 6px 0; color: #000; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-transform: uppercase; }
+                          .info-meta { font-size: 11px; margin: 0 0 2px 0; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                          @media print {
+                            @page { margin: 0; }
+                            body { margin: 0; padding: 0; align-items: flex-start; justify-content: flex-start; background: #fff; }
+                            .label-container { border: none; padding: 0; max-width: 100mm; height: 50mm; display: flex; align-items: center; border-radius: 0; }
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="label-container">
+                          <div class="qr-col">
+                            <img src="${canvas.toDataURL("image/png")}" onload="window.print();window.close();" />
+                          </div>
+                          <div class="info-col">
+                            <h1 class="info-id">${e.id}</h1>
+                            <p class="info-desc">${e.description}</p>
+                            <p class="info-meta"><strong>PAT:</strong> ${e.patrimony || 'N/A'}</p>
+                            <p class="info-meta"><strong>MOD:</strong> ${e.model || 'N/A'}</p>
+                          </div>
+                        </div>
+                      </body>
+                    </html>
+                  `;
+                  win.document.write(html);
                   win.document.close();
-                }} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
+                }} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 shadow-sm transition-colors">
                   <Download size={16}/> Imprimir Etiqueta
                 </button>
               </div>

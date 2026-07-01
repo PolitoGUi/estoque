@@ -11,6 +11,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [q, setQ] = useState(globalQ);
   const [loc, setLoc] = useState("all");
   const [cat, setCat] = useState("all");
+  const [statusF, setStatusF] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   
   const [page, setPage] = useState(1);
@@ -26,10 +27,11 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const filtered = useMemo(() => eq.filter(e => {
     const l = e.currentLocation || 'almoxarifado';
     const s = q.toLowerCase();
+    const st = e.status || 'Disponível';
     const matchQ = !q || [e.id, e.patrimony, e.serial, e.description, e.model, e.manufacturer]
       .some(v => v?.toLowerCase().includes(s));
-    return matchQ && (loc === "all" || l === loc) && (cat === "all" || e.category === cat);
-  }), [eq, q, loc, cat]);
+    return matchQ && (loc === "all" || l === loc) && (cat === "all" || e.category === cat) && (statusF === "all" || st === statusF);
+  }), [eq, q, loc, cat, statusF]);
 
   const paginated = useMemo(() => {
     const start = (page - 1) * itemsPerPage;
@@ -79,6 +81,11 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
             <option value="all">Todas as categorias</option>
             {cats.map(c => <option key={c}>{c}</option>)}
           </select>
+          <select value={statusF} onChange={e => { setStatusF(e.target.value); setPage(1); }}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <option value="all">Todos os Status</option>
+            {["Disponível", "Reservado", "Em uso", "Em manutenção", "Aguardando peça", "Sucateado"].map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
       )}
 
@@ -87,7 +94,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           <table className="w-full text-sm text-left">
             <thead>
               <tr className="bg-slate-50 border-b border-gray-200">
-                {["ID Interno","Descrição","Patrimônio","Categoria","Localização",""].map(h => (
+                {["ID Interno","Descrição","Patrimônio","Categoria","Localização","Status",""].map(h => (
                   <th key={h} className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -106,6 +113,17 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{e.patrimony || "—"}</td>
                     <td className="px-4 py-3 text-xs font-medium text-slate-600">{e.category}</td>
                     <td className="px-4 py-3"><LocBadge loc={l}/></td>
+                    <td className="px-4 py-3 text-xs font-semibold">
+                      <span className={`px-2 py-1 rounded-full ${
+                        e.status === 'Disponível' ? 'bg-emerald-100 text-emerald-700' :
+                        e.status === 'Em manutenção' ? 'bg-red-100 text-red-700' :
+                        e.status === 'Sucateado' ? 'bg-gray-100 text-gray-700' :
+                        e.status === 'Em uso' ? 'bg-blue-100 text-blue-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {e.status || 'Disponível'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <ChevronRight size={16} className="text-gray-300 group-hover:text-amber-500 transition-colors ml-auto"/>
                     </td>

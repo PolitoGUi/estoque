@@ -6,6 +6,8 @@ import { genId } from '../utils/helpers';
 import { Modal } from './Modal';
 import { LocBadge } from './MicroComponents';
 
+import { toast } from 'react-hot-toast';
+
 export const MoveModal = ({ e, onSave, onClose }) => {
   const origin = e.currentLocation || "almoxarifado";
   const dests  = Object.keys(LOCS).filter(k => k !== origin);
@@ -32,10 +34,11 @@ export const MoveModal = ({ e, onSave, onClose }) => {
         notes,
         expectedVersion: e.version // OCC Validation
       });
+      toast.success("Movimentação registrada com sucesso!");
       onSave();
       onClose();
     } catch (err) {
-      alert(err.response?.data?.error || "Erro ao movimentar equipamento. A versão pode estar desatualizada.");
+      toast.error(err.response?.data?.error || "Erro ao movimentar equipamento. A versão pode estar desatualizada.");
     } finally {
       setLoading(false);
     }
@@ -90,10 +93,11 @@ export const ObsModal = ({ e, initCat, onSave, onClose }) => {
     setLoading(true);
     try {
       await api.post('/observations', { equipmentId: e.id, category: cat, text });
+      toast.success("Registro adicionado com sucesso!");
       onSave();
       onClose();
     } catch (err) {
-      alert("Erro ao registrar observação.");
+      toast.error("Erro ao registrar observação.");
     } finally {
       setLoading(false);
     }
@@ -154,10 +158,11 @@ export const NewEqModal = ({ eqList, onSave, onClose }) => {
     setLoading(true);
     try {
       await api.post('/equipments', { id: newId, ...f });
+      toast.success("Equipamento cadastrado com sucesso!");
       onSave();
       onClose();
     } catch (err) {
-      alert(err.response?.data?.error || "Erro ao cadastrar.");
+      toast.error(err.response?.data?.error || "Erro ao cadastrar.");
     } finally {
       setLoading(false);
     }
@@ -220,6 +225,51 @@ export const NewEqModal = ({ eqList, onSave, onClose }) => {
           <button onClick={save} disabled={!valid || loading}
             className="flex-1 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-40 transition-colors shadow-sm">
             {loading ? 'Cadastrando...' : 'Cadastrar Equipamento'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export const StatusModal = ({ e, onSave, onClose }) => {
+  const [status, setStatus] = useState(e.status || "Disponível");
+  const [loading, setLoading] = useState(false);
+  const statusOptions = ["Disponível", "Reservado", "Em uso", "Em manutenção", "Aguardando peça", "Sucateado"];
+
+  const save = async () => {
+    setLoading(true);
+    try {
+      await api.put(`/equipments/${e.id}/status`, { status });
+      toast.success("Status atualizado com sucesso!");
+      onSave();
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Erro ao atualizar status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal title={`Mudar Status — ${e.id}`} onClose={onClose}>
+      <div className="space-y-4">
+        <div className="text-sm text-slate-600 font-medium">{e.description}</div>
+        <div>
+          <div className="text-xs text-slate-400 uppercase font-semibold tracking-wide mb-1.5">Estado Operacional</div>
+          <select value={status} onChange={ev => setStatus(ev.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+            {statusOptions.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button onClick={save} disabled={loading}
+            className="flex-1 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors shadow-sm">
+            {loading ? 'Salvando...' : 'Salvar Status'}
           </button>
         </div>
       </div>

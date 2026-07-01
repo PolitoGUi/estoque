@@ -60,7 +60,7 @@ router.post('/', requirePermission('equipment.move'), async (req: AuthRequest, r
           type,
           origin,
           destination,
-          userId: Number(req.user!.id),
+          userId: Number(req.user!.userId),
           notes
         },
         include: { user: { select: { name: true, initials: true } } }
@@ -68,6 +68,12 @@ router.post('/', requirePermission('equipment.move'), async (req: AuthRequest, r
 
       return event;
     });
+
+    // Notify admins if sent to lab
+    if (destination === 'laboratorio' || destination === 'laboratório') {
+      const { notifyAdmins } = require('../utils/notify');
+      await notifyAdmins(`O equipamento ${equipmentId} foi enviado para o Laboratório.`);
+    }
 
     res.status(201).json(newEvent);
   } catch (error: any) {

@@ -7,7 +7,7 @@ import { Dashboard } from '../components/Dashboard';
 import { EqList } from '../components/EqList';
 import { ByLocation } from '../components/ByLocation';
 import { EqDetail } from '../components/EqDetail';
-import { MoveModal, ObsModal, NewEqModal } from '../components/Modals';
+import { MoveModal, ObsModal, NewEqModal, StatusModal } from '../components/Modals';
 
 export const HomeApp = () => {
   const { user } = useAuth();
@@ -23,6 +23,7 @@ export const HomeApp = () => {
   const [moveEq,  setMoveEq]  = useState(null);
   const [obsModal, setObsModal] = useState({ eq: null, cat: "observacao" });
   const [showNew, setShowNew] = useState(false);
+  const [statusModal, setStatusModal] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -35,17 +36,27 @@ export const HomeApp = () => {
     }
   }, [reqView]);
 
+  const reqAction = searchParams.get('action');
+
   useEffect(() => {
     if (requestedEq && eq.length > 0) {
       const target = eq.find(e => e.id === requestedEq);
       if (target) {
         setSelEq(target);
         setView("detail");
-        // Clear the URL query param so a reload doesn't force it again
+        
+        if (reqAction === 'defeito') {
+          setObsModal({ eq: target, cat: 'defeito' });
+        }
+        if (reqAction === 'status') {
+          setStatusModal(target);
+        }
+
+        // Clean up URL
         navigate('/', { replace: true });
       }
     }
-  }, [requestedEq, eq, navigate]);
+  }, [requestedEq, eq, navigate, reqAction]);
 
   const loadEquipments = async () => {
     try {
@@ -77,6 +88,7 @@ export const HomeApp = () => {
       {moveEq && <MoveModal e={moveEq} onSave={reloadAll} onClose={() => setMoveEq(null)} />}
       {obsModal.eq && <ObsModal e={obsModal.eq} initCat={obsModal.cat} onSave={reloadAll} onClose={() => setObsModal({ eq: null, cat: "observacao" })} />}
       {showNew && <NewEqModal eqList={eq} onSave={reloadAll} onClose={() => setShowNew(false)} />}
+      {statusModal && <StatusModal e={statusModal} onSave={reloadAll} onClose={() => setStatusModal(null)} />}
     </MainLayout>
   );
 };

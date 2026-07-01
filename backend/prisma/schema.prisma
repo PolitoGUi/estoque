@@ -57,6 +57,10 @@ model User {
   events       Event[]
   observations Observation[]
   auditLogs    AuditLog[]
+  favorites    Favorite[]
+  assignedIssues Issue[]  @relation("IssueAssignedTo")
+  createdIssues  Issue[]  @relation("IssueCreatedBy")
+  notifications  Notification[]
 }
 
 model SystemSetting {
@@ -97,12 +101,15 @@ model Equipment {
   patrimony    String?
   serial       String?
   qrCodeData   String?  @unique // Structural base for QR Code JSON
+  status       String   @default("Disponível") // Disponível, Reservado, Em uso, Em manutenção, Aguardando peça, Sucateado
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   version      Int      @default(1) // For optimistic concurrency control
 
   events       Event[]
   observations Observation[]
+  favorites    Favorite[]
+  issues       Issue[]
 }
 
 model Event {
@@ -143,4 +150,42 @@ model AuditLog {
   timestamp DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Favorite {
+  userId      Int
+  equipmentId String
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, equipmentId])
+}
+
+model Issue {
+  id          String    @id @default(uuid())
+  equipmentId String
+  title       String
+  description String?
+  status      String    @default("Aberta") // Aberta, Em andamento, Aguardando, Concluída
+  priority    String    @default("Média")
+  deadline    DateTime?
+  assignedToId Int?
+  createdById Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  assignedTo  User?     @relation("IssueAssignedTo", fields: [assignedToId], references: [id])
+  createdBy   User      @relation("IssueCreatedBy", fields: [createdById], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    Int
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

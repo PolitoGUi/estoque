@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ArrowRight, Activity, MapPin, Search } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Activity, MapPin, Search, AlertCircle, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api';
 import { LOCS } from '../constants';
@@ -104,11 +104,30 @@ export const ScannerPage = () => {
                   <div className="text-xs text-amber-500 font-bold uppercase tracking-wider mb-1">Identificado</div>
                   <h2 className="text-2xl font-mono font-bold text-white mb-2">{eq.id}</h2>
                   <p className="text-slate-300 font-medium">{eq.description}</p>
-                  <p className="text-slate-500 text-sm mt-1">{eq.manufacturer} · {eq.model}</p>
+                  <p className="text-slate-500 text-sm mt-1 mb-2">{eq.manufacturer} · {eq.model}</p>
+                  <div className="inline-block px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold border border-slate-600">
+                    Status Atual: <span className="text-white">{eq.status || 'Disponível'}</span>
+                  </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="text-sm font-semibold text-slate-400 text-center mb-2">Ação Rápida de Movimentação</div>
+                  <div className="text-sm font-semibold text-slate-400 text-center mb-2">Ações Rápidas (Um Toque)</div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-2">
+                    <button onClick={() => navigate(`/?eq=${scanResult.id}&action=defeito`)}
+                      className="flex flex-col items-center justify-center gap-2 bg-red-900/40 hover:bg-red-600/60 border border-red-500/50 p-4 rounded-xl transition-all">
+                      <AlertCircle size={24} className="text-red-400"/>
+                      <span className="text-sm font-bold text-red-100">Registrar Defeito</span>
+                    </button>
+                    <button onClick={() => navigate(`/?eq=${scanResult.id}&action=status`)}
+                      className="flex flex-col items-center justify-center gap-2 bg-amber-900/40 hover:bg-amber-600/60 border border-amber-500/50 p-4 rounded-xl transition-all">
+                      <Activity size={24} className="text-amber-400"/>
+                      <span className="text-sm font-bold text-amber-100">Mudar Status</span>
+                    </button>
+                  </div>
+
+                  <div className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider my-3">Movimentar Físicamente</div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <button onClick={() => handleQuickMove('campo')} disabled={loadingAction}
                       className="flex flex-col items-center justify-center gap-2 bg-slate-700 hover:bg-green-600/20 hover:border-green-500 border border-transparent p-4 rounded-xl transition-all">
@@ -135,8 +154,8 @@ export const ScannerPage = () => {
                   <hr className="border-slate-700 my-4" />
                   
                   <button onClick={() => navigate(`/?eq=${scanResult.id}`)}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20">
-                    <Activity size={18}/> Ver Histórico e Detalhes
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-colors">
+                    <FileText size={18}/> Ver Histórico e Detalhes
                   </button>
                   <button onClick={() => { setScanResult(null); setEq(null); window.location.reload(); }}
                     className="w-full py-3 bg-transparent text-slate-400 font-bold rounded-xl hover:text-white transition-colors">

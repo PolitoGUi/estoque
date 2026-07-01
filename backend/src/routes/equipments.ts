@@ -66,4 +66,26 @@ router.post('/', requirePermission('equipment.create'), async (req: AuthRequest,
   }
 });
 
+router.put('/:id/status', requirePermission('equipment.move'), async (req: AuthRequest, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  
+  try {
+    const oldEq = await prisma.equipment.findUnique({ where: { id } });
+    if (!oldEq) return res.status(404).json({ error: "Equipment not found" });
+
+    const eq = await prisma.equipment.update({
+      where: { id },
+      data: { status }
+    });
+
+    // We do NOT create an event here, since status is an administrative tracking field independent of physical location moves.
+    // But we audit the change.
+    req.auditInfo = { action: 'EQUIPMENT_STATUS_UPDATE', resource: id, oldData: oldEq, newData: eq };
+    res.json(eq);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

@@ -21,11 +21,16 @@ router.post('/', requirePermission('observation.create'), async (req: AuthReques
       equipmentId,
       category,
       text,
-      userId: Number(req.user?.id)
+      userId: Number(req.user?.userId)
     },
     include: { user: { select: { name: true, initials: true } } }
   });
   
+  if (category === 'defeito') {
+    const { notifyAdmins } = require('../utils/notify');
+    await notifyAdmins(`Um defeito foi reportado no equipamento ${equipmentId}.`);
+  }
+
   req.auditInfo = { action: 'OBSERVATION_CREATE', resource: equipmentId, newData: observation };
   res.status(201).json(observation);
 });

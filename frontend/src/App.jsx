@@ -8,6 +8,7 @@ import { AdminPage } from './pages/AdminPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuditPage } from './pages/AuditPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { IssuesPage } from './pages/IssuesPage';
 import { Toaster, toast } from 'react-hot-toast';
 import { Modal } from './components/Modal';
 import api from './api';
@@ -89,6 +90,7 @@ export default function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/audit" element={<AuditPage />} />
+        <Route path="/issues" element={<IssuesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

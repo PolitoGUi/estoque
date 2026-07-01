@@ -14,6 +14,9 @@ import backupRoutes from './routes/backup';
 import { auditMiddleware } from './middlewares/auditMiddleware';
 
 import dashboardRoutes from './routes/dashboard';
+import issuesRoutes from './routes/issues';
+import favoritesRoutes from './routes/favorites';
+import notificationsRoutes from './routes/notifications';
 
 dotenv.config();
 
@@ -35,11 +38,24 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/issues', issuesRoutes);
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: err.message || 'Internal Server Error' });
+});
+
+import path from 'path';
+
+// Serve frontend in production (Single Deployment)
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
