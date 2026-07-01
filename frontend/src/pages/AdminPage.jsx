@@ -13,6 +13,9 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -20,6 +23,8 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
         initials: user.initials || '', roleId: user.role?.id || '',
         isActive: user.isActive, forcePasswordChange: false
       });
+      setResettingPassword(false);
+      setNewPassword('');
     } else {
       setFormData({ name: '', email: '', password: '', initials: '', roleId: roles[0]?.id || '', isActive: true, forcePasswordChange: true });
     }
@@ -49,12 +54,13 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
     }
   };
 
-  const handleResetPassword = async () => {
-    const newPass = window.prompt("Digite a nova senha temporária para este usuário:");
-    if (!newPass) return;
+  const executePasswordReset = async () => {
+    if (!newPassword || newPassword.length < 6) return toast.error("A senha deve ter no mínimo 6 caracteres");
     try {
-      await api.post(`/users/${user.id}/reset-password`, { password: newPass, forcePasswordChange: true });
+      await api.post(`/users/${user.id}/reset-password`, { password: newPassword, forcePasswordChange: true });
       toast.success("Senha redefinida com sucesso! O usuário deverá trocá-la no próximo login.");
+      setResettingPassword(false);
+      setNewPassword('');
     } catch (err) {
       toast.error("Erro ao redefinir senha.");
     }
@@ -109,12 +115,24 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
         </div>
 
         {isEdit && (
-          <div className="pt-4 mt-2 border-t border-slate-100 flex items-center justify-between">
-            <div className="text-sm text-slate-500">Ações de Segurança:</div>
-            <button type="button" onClick={handleResetPassword}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors">
-              <KeyRound size={14}/> Redefinir Senha
-            </button>
+          <div className="pt-4 mt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm text-slate-500 font-semibold">Ações de Segurança:</div>
+              <button type="button" onClick={() => setResettingPassword(!resettingPassword)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors">
+                <KeyRound size={14}/> {resettingPassword ? 'Cancelar Redefinição' : 'Redefinir Senha'}
+              </button>
+            </div>
+            {resettingPassword && (
+              <div className="bg-amber-50 p-3 rounded-lg border border-amber-200 flex gap-2">
+                <input type="password" placeholder="Nova senha temporária" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                  className="flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <button type="button" onClick={executePasswordReset}
+                  className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors">
+                  Confirmar
+                </button>
+              </div>
+            )}
           </div>
         )}
 

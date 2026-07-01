@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MainLayout } from './MainLayout';
 import api from '../api';
-import { Database, Image, Settings, Layers, Folder, Download, Upload, Trash2, Plus, Edit2 } from 'lucide-react';
+import { Database, Settings, Layers, Folder, Download, Upload, Trash2, Plus, Edit2, MapPin } from 'lucide-react';
 
 export const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('system');

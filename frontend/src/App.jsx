@@ -7,6 +7,7 @@ import { ScannerPage } from './pages/ScannerPage';
 import { AdminPage } from './pages/AdminPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuditPage } from './pages/AuditPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { Toaster, toast } from 'react-hot-toast';
 import { Modal } from './components/Modal';
 import api from './api';
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/scanner" element={<ScannerPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/audit" element={<AuditPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
