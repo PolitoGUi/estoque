@@ -17,10 +17,8 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const itemsPerPage = 20;
 
   useEffect(() => {
-    if (globalQ) {
-      setQ(globalQ);
-      setPage(1);
-    }
+    setQ(globalQ);
+    setPage(1);
   }, [globalQ]);
 
   const cats = useMemo(() => [...new Set(eq.map(e => e.category))].sort(), [eq]);

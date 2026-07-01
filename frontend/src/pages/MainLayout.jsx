@@ -19,11 +19,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      // Navega para a home com a busca (usaremos params ou enviaremos o termo se suportado)
-      // Como HomeApp ainda não tem "search", vamos passar pela querystring q=
-      navigate(`/?view=list&q=${encodeURIComponent(searchTerm.trim())}`);
-    }
+    navigate(`/?view=list&q=${encodeURIComponent(searchTerm.trim())}`);
   };
 
   return (
