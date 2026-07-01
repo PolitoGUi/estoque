@@ -71,19 +71,23 @@ export const ScannerPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900 text-white">
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
-        <button onClick={() => navigate('/')} className="text-amber-500 hover:text-amber-400">
+    <div className="flex flex-col h-[100dvh] bg-slate-900 text-white relative">
+      {/* Background Gradient Effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900/20 opacity-80 pointer-events-none"></div>
+
+      <div className="p-4 border-b border-white/10 flex items-center justify-between glass-dark z-10 relative">
+        <button onClick={() => navigate('/')} className="text-amber-500 hover:text-amber-400 p-2 rounded-full hover:bg-white/5 transition-colors">
           <ChevronLeft size={24} />
         </button>
-        <h1 className="font-bold">Scanner Expresso</h1>
-        <div className="w-6" />
+        <h1 className="font-bold tracking-wide">Scanner Expresso</h1>
+        <div className="w-10" />
       </div>
 
-      <div className="flex-1 p-4 flex flex-col items-center justify-center overflow-y-auto">
+      <div className="flex-1 p-4 flex flex-col items-center justify-center overflow-y-auto relative z-10">
         {!scanResult ? (
-          <div className="w-full max-w-sm">
-            <div className="bg-white rounded-lg overflow-hidden text-black shadow-2xl border-4 border-slate-800">
+          <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-black rounded-3xl overflow-hidden text-black shadow-[0_0_40px_rgba(245,158,11,0.15)] border border-white/10 relative">
+              <div className="absolute inset-0 border-4 border-amber-500/30 rounded-3xl pointer-events-none z-20"></div>
               <Scanner
                 onScan={handleScan}
                 onError={(err) => setError(err?.message || "Erro na câmera")}
@@ -91,13 +95,13 @@ export const ScannerPage = () => {
                 styles={{ container: { width: '100%', height: '100%' } }}
               />
             </div>
-            {error && <p className="text-red-500 text-center mt-4 text-sm font-semibold">{error}</p>}
-            <p className="text-slate-400 text-center mt-6 text-sm flex items-center justify-center gap-2">
-              <Search size={16}/> Aponte a câmera para a etiqueta do equipamento
+            {error && <p className="text-red-400 text-center mt-4 text-sm font-semibold bg-red-900/30 p-2 rounded-lg border border-red-500/20">{error}</p>}
+            <p className="text-slate-400 text-center mt-8 text-sm flex items-center justify-center gap-2 font-medium bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
+              <Search size={16} className="text-amber-500"/> Aponte a câmera para a etiqueta
             </p>
           </div>
         ) : (
-          <div className="w-full max-w-md bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md glass-dark p-6 rounded-3xl border border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
             {eq ? (
               <>
                 <div className="text-center mb-6">
