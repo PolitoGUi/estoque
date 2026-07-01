@@ -135,29 +135,29 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
       </main>
 
       {/* Bottom Navigation (Mobile Only - Floating Glassmorphism) */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 glass-nav rounded-2xl flex items-center justify-around h-[68px] z-30 pb-safe px-2 overflow-visible">
-        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'dashboard' ? 'text-amber-600 scale-105' : 'text-slate-400'}`}>
-          <Home size={22} className={activeNav === 'dashboard' ? 'text-amber-500 drop-shadow-md' : ''}/>
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 glass-dark rounded-2xl flex items-center justify-around h-[68px] z-30 pb-safe px-2 overflow-visible">
+        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'dashboard' ? 'text-blue-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+          <Home size={22} className={activeNav === 'dashboard' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Início</span>
         </button>
-        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'list' ? 'text-amber-600 scale-105' : 'text-slate-400'}`}>
-          <Package size={22} className={activeNav === 'list' ? 'text-amber-500 drop-shadow-md' : ''}/>
+        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'list' ? 'text-emerald-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+          <Package size={22} className={activeNav === 'list' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Ativos</span>
         </button>
         
         {/* Scanner Protagonista (Floating Glow) */}
         <div className="relative w-full h-full flex justify-center z-40">
-          <button onClick={() => navigate('/scanner')} className="absolute -top-6 bg-gradient-to-tr from-amber-500 to-orange-400 hover:from-amber-600 hover:to-orange-500 text-white p-3.5 rounded-full shadow-[0_8px_16px_rgba(245,158,11,0.4)] border-4 border-slate-50 transition-transform active:scale-90 glow-pulse">
+          <button onClick={() => navigate('/scanner')} className="absolute -top-6 bg-gradient-to-tr from-amber-500 to-orange-400 hover:from-amber-600 hover:to-orange-500 text-white p-3.5 rounded-full shadow-[0_8px_16px_rgba(245,158,11,0.4)] border-4 border-slate-900 transition-transform active:scale-90 glow-pulse">
             <QrCode size={26} className="drop-shadow-md" />
           </button>
-          <span className="absolute bottom-2 text-[10px] font-bold text-slate-700">Scanner</span>
+          <span className="absolute bottom-2 text-[10px] font-bold text-slate-400">Scanner</span>
         </div>
 
-        <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-amber-600 scale-105' : 'text-slate-400'}`}>
-          <FileText size={22} className={activeNav === 'reports' ? 'text-amber-500 drop-shadow-md' : ''}/>
+        <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-indigo-400 scale-105' : 'text-slate-500 hover:text-slate-400'}`}>
+          <FileText size={22} className={activeNav === 'reports' ? 'drop-shadow-md' : ''}/>
           <span className="text-[10px] font-bold mt-1">Relat.</span>
         </button>
-        <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-slate-400`}>
+        <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-slate-500 hover:text-rose-400`}>
           <Users size={22} />
           <span className="text-[10px] font-bold mt-1">Sair</span>
         </button>
