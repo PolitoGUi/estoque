@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api' // In development, vite proxies this to http://localhost:3000
+  baseURL: import.meta.env.VITE_API_URL || '/api' // Use VITE_API_URL in production, fallback to /api for local Docker
 });
 
 // Request interceptor to attach JWT token
