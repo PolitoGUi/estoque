@@ -140,20 +140,55 @@ export const ReportsPage = () => {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 border-b border-gray-200 shadow-sm z-10">
                   <tr className="text-left">
-                    {Object.keys(data[0]).filter(k => typeof data[0][k] !== 'object').map(k => (
-                      <th key={k} className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">{k}</th>
-                    ))}
+                    {reportType === 'events' ? (
+                      <>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">ID Equipamento</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Tipo</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Origem</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Destino</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Usuário</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Data/Hora</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Notas</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">ID</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Descrição</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Categoria</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Fabricante</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Modelo</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Série</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Patrimônio</th>
+                        <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">Criado Em</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {data.slice(0, 50).map((row, i) => (
                     <tr key={i} className="hover:bg-amber-50 transition-colors">
-                      {Object.keys(data[0]).filter(k => typeof data[0][k] !== 'object').map(k => {
-                        let val = row[k];
-                        if (typeof val === 'boolean') val = val ? 'Sim' : 'Não';
-                        if (String(k).toLowerCase().includes('time') || String(k).toLowerCase().includes('date')) val = fmtDate(val);
-                        return <td key={k} className="px-4 py-2 whitespace-nowrap text-slate-600">{String(val || '')}</td>
-                      })}
+                      {reportType === 'events' ? (
+                        <>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600 font-mono text-xs">{row.equipmentId || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.type || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.origin || '—'}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.destination || '—'}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.user?.name || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{fmtDate(row.timestamp)}</td>
+                          <td className="px-4 py-2 text-slate-600 max-w-xs truncate" title={row.notes || ''}>{row.notes || '—'}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600 font-mono text-xs">{row.id || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.description || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.category || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.manufacturer || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.model || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.serial || '—'}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{row.patrimony || '—'}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-slate-600">{fmtDate(row.createdAt)}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

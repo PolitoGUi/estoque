@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search } from 'lucide-react';
+import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -72,11 +72,11 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
                 </button>
                 <button onClick={() => navigate('/admin')}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 ${activeNav === 'admin' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-                  <Shield size={18} className="text-emerald-500" /> Administração
+                  <Users size={18} className="text-emerald-500" /> Usuários e Perfis
                 </button>
                 <button onClick={() => navigate('/settings')}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 ${activeNav === 'settings' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-                  <Settings size={18} className="text-gray-400" /> Configurações
+                  <Settings size={18} className="text-gray-400" /> Configurações Globais
                 </button>
               </>
             )}

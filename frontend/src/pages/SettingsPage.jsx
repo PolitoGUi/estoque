@@ -24,9 +24,20 @@ export const SettingsPage = () => {
     }
   };
 
+  const [systemState, setSystemState] = useState({ company_name: '', company_logo: '' });
+
   useEffect(() => {
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    if (data.system) {
+      setSystemState({
+        company_name: data.system.find(s => s.key === 'company_name')?.value || '',
+        company_logo: data.system.find(s => s.key === 'company_logo')?.value || '',
+      });
+    }
+  }, [data.system]);
 
   const handleBackupExport = () => {
     window.open(`${api.defaults.baseURL}/backup/export`, '_blank');
@@ -54,6 +65,16 @@ export const SettingsPage = () => {
     }
   };
 
+  const saveSystemSettings = async () => {
+    try {
+      await api.post('/settings/system', { key: 'company_name', value: systemState.company_name });
+      await api.post('/settings/system', { key: 'company_logo', value: systemState.company_logo });
+      alert('Configurações salvas com sucesso!');
+    } catch (err) {
+      alert('Erro ao salvar configurações.');
+    }
+  };
+
   const renderSystemTab = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2">Sistema e Aparência</h3>
@@ -62,18 +83,20 @@ export const SettingsPage = () => {
         <div>
           <label className="text-sm font-semibold text-slate-600 block mb-1">Nome da Empresa</label>
           <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" 
-            defaultValue={data.system.find(s => s.key === 'company_name')?.value || ''} 
+            value={systemState.company_name}
+            onChange={e => setSystemState({ ...systemState, company_name: e.target.value })}
           />
         </div>
         <div>
           <label className="text-sm font-semibold text-slate-600 block mb-1">Logo URL</label>
           <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" 
-            defaultValue={data.system.find(s => s.key === 'company_logo')?.value || ''} 
+            value={systemState.company_logo}
+            onChange={e => setSystemState({ ...systemState, company_logo: e.target.value })}
             placeholder="https://..."
           />
         </div>
       </div>
-      <button className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600">Salvar Alterações</button>
+      <button onClick={saveSystemSettings} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 shadow-sm transition-colors">Salvar Alterações</button>
 
       <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2 mt-8 pt-4">Backup e Restauração</h3>
       <div className="flex gap-4">
