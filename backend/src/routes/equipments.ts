@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
 import prisma from '../prismaClient';
+import { broadcastUpdate } from '../events/emitter';
 
 const router = Router();
 router.use(authenticate);
@@ -59,6 +60,7 @@ router.post('/', requirePermission('equipment.create'), async (req: AuthRequest,
     });
 
     req.auditInfo = { action: 'EQUIPMENT_CREATE', resource: newEquipment.id, newData: newEquipment };
+    broadcastUpdate('refresh');
     res.status(201).json(newEquipment);
   } catch (error: any) {
     console.error("Erro no cadastro:", error);
@@ -82,6 +84,7 @@ router.put('/:id/status', requirePermission('equipment.move'), async (req: AuthR
     // We do NOT create an event here, since status is an administrative tracking field independent of physical location moves.
     // But we audit the change.
     req.auditInfo = { action: 'EQUIPMENT_STATUS_UPDATE', resource: id, oldData: oldEq, newData: eq };
+    broadcastUpdate('refresh');
     res.json(eq);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

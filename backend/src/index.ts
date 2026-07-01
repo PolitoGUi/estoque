@@ -17,6 +17,7 @@ import dashboardRoutes from './routes/dashboard';
 import issuesRoutes from './routes/issues';
 import favoritesRoutes from './routes/favorites';
 import notificationsRoutes from './routes/notifications';
+import streamRoutes from './routes/stream';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/issues', issuesRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/stream', streamRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

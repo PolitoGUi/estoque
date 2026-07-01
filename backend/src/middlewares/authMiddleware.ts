@@ -17,11 +17,17 @@ export interface AuthRequest extends Request {
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token not provided' });
+  let token = '';
+
+  if (authHeader) {
+    [, token] = authHeader.split(' ');
+  } else if (req.query.token) {
+    token = req.query.token as string;
   }
 
-  const [, token] = authHeader.split(' ');
+  if (!token) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: number; roleId: number };

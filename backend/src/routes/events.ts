@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
 import prisma from '../prismaClient';
 
+import { broadcastUpdate } from '../events/emitter';
+
 const router = Router();
 router.use(authenticate);
 
@@ -75,6 +77,7 @@ router.post('/', requirePermission('equipment.move'), async (req: AuthRequest, r
       await notifyAdmins(`O equipamento ${equipmentId} foi enviado para o Laboratório.`);
     }
 
+    broadcastUpdate('refresh');
     res.status(201).json(newEvent);
   } catch (error: any) {
     if (error.message.includes('Concurrency conflict')) {

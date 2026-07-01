@@ -8,6 +8,7 @@ import { EqList } from '../components/EqList';
 import { ByLocation } from '../components/ByLocation';
 import { EqDetail } from '../components/EqDetail';
 import { MoveModal, ObsModal, NewEqModal, StatusModal } from '../components/Modals';
+import { useRealtime } from '../hooks/useRealtime';
 
 export const HomeApp = () => {
   const { user } = useAuth();
@@ -25,6 +26,25 @@ export const HomeApp = () => {
   const [showNew, setShowNew] = useState(false);
   const [statusModal, setStatusModal] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const loadEquipments = async () => {
+    try {
+      const res = await api.get('/equipments');
+      setEq(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const reloadAll = () => {
+    loadEquipments();
+    setRefreshKey(prev => prev + 1);
+  };
+
+  useRealtime(() => {
+    console.log("Real-time update received!");
+    reloadAll();
+  });
 
   useEffect(() => {
     loadEquipments();
@@ -57,20 +77,6 @@ export const HomeApp = () => {
       }
     }
   }, [requestedEq, eq, navigate, reqAction]);
-
-  const loadEquipments = async () => {
-    try {
-      const res = await api.get('/equipments');
-      setEq(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const reloadAll = () => {
-    loadEquipments();
-    setRefreshKey(prev => prev + 1);
-  };
 
   return (
     <MainLayout view={view} setView={setView} setSelEq={setSelEq}>
