@@ -236,14 +236,15 @@ export const QRCodeModal = ({ e, onClose }) => {
     <Modal title={`QR Code — ${e.id}`} onClose={onClose}>
       <div className="flex flex-col items-center justify-center space-y-4 p-4">
         <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
-          <QRCodeCanvas value={qrData} size={200} level="H" includeMargin />
+          <QRCodeCanvas id="qr-canvas-download" value={qrData} size={200} level="H" includeMargin />
         </div>
         <p className="text-sm text-slate-500 text-center">
           Escaneie este código pelo aplicativo móvel para acessar o equipamento rapidamente.
         </p>
         <button onClick={() => {
-            const canvas = document.querySelector("canvas");
-            const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+            const canvas = document.getElementById("qr-canvas-download");
+            if (!canvas) return;
+            const pngUrl = canvas.toDataURL("image/png");
             let downloadLink = document.createElement("a");
             downloadLink.href = pngUrl;
             downloadLink.download = `QR_${e.id}.png`;

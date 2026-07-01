@@ -6,7 +6,7 @@ import { fmtDate } from '../utils/helpers';
 import { LocBadge, CatBadge, Av } from './MicroComponents';
 import { QRCodeModal } from './Modals';
 import { Timeline } from './Timeline';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
   const [tab, setTab] = useState("info");
@@ -179,13 +179,28 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
             <div className="animate-in fade-in flex flex-col items-center justify-center py-8">
               <h3 className="text-lg font-bold text-slate-800 mb-8">Etiqueta Inteligente AssetTrack</h3>
               <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 inline-block mb-8">
-                <QRCodeSVG value={qrData} size={220} level="M" />
+                <QRCodeCanvas id={`qr-detail-${e.id}`} value={qrData} size={220} level="M" includeMargin />
               </div>
               <div className="flex gap-4">
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700">
+                <button onClick={() => {
+                  const canvas = document.getElementById(`qr-detail-${e.id}`);
+                  if (!canvas) return;
+                  const pngUrl = canvas.toDataURL("image/png");
+                  let downloadLink = document.createElement("a");
+                  downloadLink.href = pngUrl;
+                  downloadLink.download = `QR_${e.id}.png`;
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
+                }} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700">
                   <Download size={16}/> Baixar PNG
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
+                <button onClick={() => {
+                  const canvas = document.getElementById(`qr-detail-${e.id}`);
+                  if (!canvas) return;
+                  const win = window.open();
+                  win.document.write(`<img src="${canvas.toDataURL("image/png")}" onload="window.print();window.close();" />`);
+                }} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
                   <Download size={16}/> Imprimir Etiqueta
                 </button>
               </div>
