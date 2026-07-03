@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X, Star } from 'lucide-react';
+import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X, Star, Wrench } from 'lucide-react';
 import api from '../api';
 import { LOCS, OBS_CATS, EQ_HEALTH } from '../constants';
 import { fmtDate } from '../utils/helpers';
@@ -113,6 +113,10 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
             <button onClick={() => onObs(e,"defeito")}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors shadow-sm">
               <AlertCircle size={14}/> Reportar Defeito
+            </button>
+            <button onClick={() => onObs(e,"reparo")}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors shadow-sm">
+              <Wrench size={14}/> Reportar Reparo
             </button>
             <button onClick={() => onObs(e,"observacao")}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors shadow-sm">

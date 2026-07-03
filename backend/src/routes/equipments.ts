@@ -1,7 +1,8 @@
+import { broadcastUpdate } from '../events/emitter';
 import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
 import prisma from '../prismaClient';
-import { broadcastUpdate } from '../events/emitter';
+
 
 const router = Router();
 router.use(authenticate);
@@ -33,19 +34,19 @@ router.post('/', requirePermission('equipment.create'), async (req: AuthRequest,
   try {
     const newEquipment = await prisma.$transaction(async (tx) => {
       const qrJson = JSON.stringify({ id: data.id, v: 1 });
-      const eq = await tx.equipment.create({
-        data: {
-          id: data.id,
-          description: data.description,
-          manufacturer: data.manufacturer,
-          model: data.model,
-          category: data.category,
-          patrimony: data.patrimony || null,
-          serial: data.serial || null,
-          status: 'FUNCIONAL',
-          qrCodeData: qrJson, // Structured JSON format for QR Code
-        }
-      });
+        const eq = await tx.equipment.create({
+          data: {
+            id: data.id?.trim().toUpperCase(),
+            description: data.description?.trim().toUpperCase(),
+            manufacturer: data.manufacturer?.trim().toUpperCase(),
+            model: data.model?.trim().toUpperCase(),
+            category: data.category?.trim().toUpperCase(),
+            patrimony: data.patrimony ? data.patrimony.trim().toUpperCase() : null,
+            serial: data.serial ? data.serial.trim().toUpperCase() : null,
+            status: 'FUNCIONAL',
+            qrCodeData: qrJson, // Structured JSON format for QR Code
+          }
+        });
 
       await tx.event.create({
         data: {
@@ -69,6 +70,37 @@ router.post('/', requirePermission('equipment.create'), async (req: AuthRequest,
   }
 });
 
+
+router.put('/:id', requirePermission('equipment.update'), async (req: AuthRequest, res) => {
+  const { id } = req.params;
+  const data = req.body;
+  
+  try {
+    const oldEq = await prisma.equipment.findUnique({ where: { id } });
+    if (!oldEq) return res.status(404).json({ error: "Equipment not found" });
+
+    // Normalize incoming string fields
+    const updateData: any = {};
+    if (data.description !== undefined) updateData.description = data.description?.trim().toUpperCase();
+    if (data.manufacturer !== undefined) updateData.manufacturer = data.manufacturer?.trim().toUpperCase();
+    if (data.model !== undefined) updateData.model = data.model?.trim().toUpperCase();
+    if (data.category !== undefined) updateData.category = data.category?.trim().toUpperCase();
+    if (data.patrimony !== undefined) updateData.patrimony = data.patrimony ? data.patrimony.trim().toUpperCase() : null;
+    if (data.serial !== undefined) updateData.serial = data.serial ? data.serial.trim().toUpperCase() : null;
+
+    const eq = await prisma.equipment.update({
+      where: { id },
+      data: updateData
+    });
+
+    req.auditInfo = { action: 'EQUIPMENT_UPDATE', resource: id, oldData: oldEq, newData: eq };
+    
+    broadcastUpdate('refresh');
+    res.json(eq);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 router.put('/:id/status', requirePermission('equipment.move'), async (req: AuthRequest, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -141,3 +173,6 @@ router.post('/bulk', requirePermission('equipment.move'), async (req: AuthReques
 });
 
 export default router;
+
+
+

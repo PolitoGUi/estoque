@@ -35,20 +35,19 @@ router.post('/', requirePermission('observation.create'), async (req: AuthReques
       data: { status: 'COM_DEFEITO' }
     });
 
-    // 2. Criar Pendência (Issue)
-    const issue = await prisma.issue.create({
-      data: {
-        equipmentId,
-        title: `Defeito: ${equipmentId}`,
-        description: text,
-        status: 'OPEN',
-        priority: 'Média',
-        createdById: Number(req.user?.id)
-      }
+    // 2. Notificar admins
+    await notifyAdmins(`O equipamento ${equipmentId} apresentou defeito.`);
+  } else if (category === 'reparo') {
+    const { notifyAdmins } = require('../utils/notify');
+    
+    // 1. Atualizar status do equipamento
+    await prisma.equipment.update({
+      where: { id: equipmentId },
+      data: { status: 'FUNCIONAL' }
     });
 
-    // 3. Notificar admins
-    await notifyAdmins(`O equipamento ${equipmentId} apresentou defeito (Issue #${issue.id.slice(0,6)}).`);
+    // 2. Notificar admins
+    await notifyAdmins(`O equipamento ${equipmentId} foi reparado e voltou a operar.`);
   }
 
   req.auditInfo = { action: 'OBSERVATION_CREATE', resource: equipmentId, newData: observation };
