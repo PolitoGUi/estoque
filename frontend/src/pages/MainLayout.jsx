@@ -213,27 +213,24 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
         </div>
       </main>
 
-      {/* Bottom Navigation (Mobile Only - Amber Solid Theme) */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-amber-500 shadow-xl shadow-amber-500/30 rounded-2xl flex items-center justify-around h-[68px] z-30 pb-safe px-2 overflow-visible">
-        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'dashboard' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
-          <Home size={22} className={activeNav === 'dashboard' ? 'drop-shadow-md' : ''}/>
+      {/* Bottom Navigation (Mobile Only) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex items-center justify-around h-[68px] z-50 pb-safe px-2">
+        <button onClick={() => navigate('/?view=dashboard')} className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeNav === 'dashboard' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-200'}`}>
+          <Home size={24} />
           <span className="text-[10px] font-bold mt-1">Início</span>
         </button>
-        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'list' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
-          <Package size={22} className={activeNav === 'list' ? 'drop-shadow-md' : ''}/>
+        <button onClick={() => navigate('/?view=list')} className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeNav === 'list' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-200'}`}>
+          <Package size={24} />
           <span className="text-[10px] font-bold mt-1">Ativos</span>
         </button>
-        
-        {/* Scanner Protagonista (Floating Glow) - White button on amber background */}
-        <div className="relative w-full h-full flex justify-center z-40">
-          <button onClick={() => navigate('/scanner')} className="absolute -top-6 bg-white hover:bg-slate-50 text-amber-500 p-3.5 rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.15)] border-4 border-amber-500 transition-transform active:scale-90 glow-pulse">
-            <QrCode size={26} className="drop-shadow-sm" />
-          </button>
-          <span className="absolute bottom-2 text-[10px] font-bold text-amber-50">Scanner</span>
-        </div>
-
-        <button onClick={() => navigate('/?view=profile')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'profile' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
-          <User size={22} className={activeNav === 'profile' ? 'drop-shadow-md' : ''}/>
+        <button onClick={() => navigate('/scanner')} className={`flex flex-col items-center justify-center w-full h-full transition-colors text-slate-400 hover:text-slate-200`}>
+          <div className="p-1.5 bg-slate-800 rounded-full mb-0.5">
+            <QrCode size={20} className="text-amber-500" />
+          </div>
+          <span className="text-[10px] font-bold">Scanner</span>
+        </button>
+        <button onClick={() => navigate('/?view=profile')} className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeNav === 'profile' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-200'}`}>
+          <User size={24} />
           <span className="text-[10px] font-bold mt-1">Perfil</span>
         </button>
       </nav>

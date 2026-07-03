@@ -14,8 +14,6 @@ export const ScannerPage = () => {
   const handleScan = (detectedCodes) => {
     if (!detectedCodes || detectedCodes.length === 0) return;
     const result = detectedCodes[0].rawValue;
-    
-    if (navigator.vibrate) navigator.vibrate(100);
 
     try {
       let parsed;
