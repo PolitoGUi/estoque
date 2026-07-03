@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity } from 'lucide-react';
+import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity, MoveRight, Settings2, ChevronDown } from 'lucide-react';
 import { LOCS, EQ_STATUS } from '../constants';
 import { LocBadge, StatusBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
@@ -96,18 +96,25 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                 className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm">
                 <Printer size={14}/> Imprimir ({selectedEqs.length})
               </button>
-              
-              <select onChange={(e) => { if(e.target.value) { handleBulkAction('move', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
-                className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
-                <option value="">Mover Selecionados...</option>
-                {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
-              </select>
+              <div className="relative flex items-center">
+                <MoveRight size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
+                <select onChange={(e) => { if(e.target.value) { handleBulkAction('move', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                  className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
+                  <option value="">Mover Selecionados...</option>
+                  {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
+                </select>
+                <ChevronDown size={13} className="absolute right-2 text-slate-400 pointer-events-none" />
+              </div>
 
-              <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
-                className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
-                <option value="">Alterar Status...</option>
-                {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
-              </select>
+              <div className="relative flex items-center">
+                <Settings2 size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
+                <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                  className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
+                  <option value="">Alterar Status...</option>
+                  {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
+                </select>
+                <ChevronDown size={13} className="absolute right-2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
           )}
           <button onClick={() => setShowFilters(!showFilters)}
