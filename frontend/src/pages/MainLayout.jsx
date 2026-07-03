@@ -14,7 +14,7 @@ const NAV = [
 ];
 
 export const MainLayout = ({ view, setView, setSelEq, children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
@@ -112,10 +112,12 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           <div className="pt-4 mt-4 border-t border-slate-800">
 
 
-            <button onClick={() => navigate('/reports')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 ${activeNav === 'reports' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-              <Package size={18} className="text-blue-500" /> Relatórios
-            </button>
+            {hasPermission('reports.export') && (
+              <button onClick={() => navigate('/reports')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 ${activeNav === 'reports' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                <Package size={18} className="text-blue-500" /> Relatórios
+              </button>
+            )}
             
             {isAdmin && (
               <>
@@ -225,10 +227,12 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           <span className="absolute bottom-2 text-[10px] font-bold text-amber-50">Scanner</span>
         </div>
 
-        <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
-          <FileText size={22} className={activeNav === 'reports' ? 'drop-shadow-md' : ''}/>
-          <span className="text-[10px] font-bold mt-1">Relat.</span>
-        </button>
+        {hasPermission('reports.export') && (
+          <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
+            <FileText size={22} className={activeNav === 'reports' ? 'drop-shadow-md' : ''}/>
+            <span className="text-[10px] font-bold mt-1">Relat.</span>
+          </button>
+        )}
         <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
           <Users size={22} />
           <span className="text-[10px] font-bold mt-1">Sair</span>

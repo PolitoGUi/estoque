@@ -7,7 +7,7 @@ import { PrintQRGrid } from './PrintQRGrid';
 import api from '../api';
 import toast from 'react-hot-toast';
 
-export const EqList = ({ eq, onSelect, onNew, userRole }) => {
+export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
   const [searchParams] = useSearchParams();
   const globalQ = searchParams.get('q') || '';
   const initialLoc = searchParams.get('loc') || 'all';
@@ -129,7 +129,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border ${showFilters ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'}`}>
             <SlidersHorizontal size={15}/> Filtros
           </button>
-          {userRole !== 'viewer' && (
+          {canCreate && (
             <button onClick={onNew}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm">
               <Plus size={15}/> Cadastrar

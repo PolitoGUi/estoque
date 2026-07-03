@@ -11,7 +11,7 @@ import { MoveModal, ObsModal, NewEqModal, StatusModal } from '../components/Moda
 import { useRealtime } from '../hooks/useRealtime';
 
 export const HomeApp = () => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedEq = searchParams.get('eq');
@@ -91,7 +91,7 @@ export const HomeApp = () => {
   return (
     <MainLayout view={view} setView={setView} setSelEq={setSelEq}>
       {view === "dashboard" && <Dashboard eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} />}
-      {view === "list" && <EqList eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} onNew={() => setShowNew(true)} userRole={user?.role?.name} />}
+      {view === "list" && <EqList eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} onNew={() => setShowNew(true)} canCreate={hasPermission('equipment.create')} />}
       {view === "location" && <ByLocation eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} />}
       {view === "detail" && selEq && (
         <EqDetail e={selEq} refreshKey={refreshKey}

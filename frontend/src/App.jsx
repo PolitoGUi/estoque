@@ -72,7 +72,7 @@ const ForcePasswordChangeModal = () => {
 };
 
 export default function App() {
-  const { token, user } = useAuth();
+  const { token, user, hasPermission } = useAuth();
 
   if (!token) {
     return <Login />;
@@ -85,10 +85,24 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomeApp />} />
         <Route path="/scanner" element={<ScannerPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/audit" element={<AuditPage />} />
+        
+        {/* Protected Routes */}
+        <Route path="/admin" element={
+          (user?.role?.name === 'Administrador' || user?.role === 'Administrador') ? <AdminPage /> : <Navigate to="/" replace />
+        } />
+        
+        <Route path="/settings" element={
+          (user?.role?.name === 'Administrador' || user?.role === 'Administrador') ? <SettingsPage /> : <Navigate to="/" replace />
+        } />
+        
+        <Route path="/audit" element={
+          (user?.role?.name === 'Administrador' || user?.role === 'Administrador') ? <AuditPage /> : <Navigate to="/" replace />
+        } />
+        
+        <Route path="/reports" element={
+          hasPermission('reports.export') ? <ReportsPage /> : <Navigate to="/" replace />
+        } />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

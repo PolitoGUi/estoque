@@ -22,8 +22,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const hasPermission = (perm) => {
+    if (!user) return false;
+    if (user.role?.name === 'Administrador' || user.role === 'Administrador') return true;
+    const rolePerms = user.role?.permissions || [];
+    const userPerms = user.permissions || [];
+    return rolePerms.includes(perm) || userPerms.includes(perm);
+  };
+
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, setUser }}>
+    <AuthContext.Provider value={{ token, user, login, logout, setUser, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );
