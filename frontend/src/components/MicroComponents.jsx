@@ -1,5 +1,5 @@
 import React from 'react';
-import { LOCS, OBS_CATS } from '../constants';
+import { LOCS, OBS_CATS, EQ_STATUS } from '../constants';
 
 export const LocBadge = ({ loc }) => {
   const l = LOCS[loc] || LOCS.almoxarifado;
@@ -22,7 +22,7 @@ export const Av = ({ initials }) => (
 );
 
 export const StatusBadge = ({ status }) => {
-  const s = require('../constants').EQ_STATUS[status];
+  const s = EQ_STATUS[status];
   if (!s) return <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">{status}</span>;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${s.bg} ${s.color} border ${s.border}`}>
