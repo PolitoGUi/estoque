@@ -147,9 +147,9 @@ router.post('/bulk', requirePermission('equipment.move'), async (req: AuthReques
         
         if (value === 'campo') {
           const equipmentsToMove = await tx.equipment.findMany({ where: { id: { in: ids } } });
-          const blocked = equipmentsToMove.filter(eq => eq.status !== 'FUNCIONAL');
+          const blocked = equipmentsToMove.filter(eq => eq.status === 'SUCATA');
           if (blocked.length > 0) {
-            throw new Error(`Existem equipamentos bloqueados na seleção (Status diferente de FUNCIONAL). Não é possível enviar para campo.`);
+            throw new Error(`Existem equipamentos como SUCATA na seleção. Não é possível enviar para campo.`);
           }
         }
 
