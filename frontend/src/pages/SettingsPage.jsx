@@ -3,6 +3,7 @@ import { MainLayout } from './MainLayout';
 import api from '../api';
 import { Modal } from '../components/Modal';
 import { Database, Settings, Layers, Folder, Download, Upload, Trash2, Plus, Edit2, MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('system');
@@ -42,7 +43,7 @@ export const SettingsPage = () => {
 
   const handleBackupExport = async () => {
     try {
-      alert("Gerando backup, aguarde... (Isso pode levar alguns segundos)");
+      toast.loading("Gerando backup, aguarde...", { id: 'backup' });
       const res = await api.get('/backup/export', { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
@@ -51,8 +52,9 @@ export const SettingsPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      toast.success("Backup gerado com sucesso!", { id: 'backup' });
     } catch(err) {
-      alert("Erro ao exportar backup: " + (err.response?.data?.error || err.message));
+      toast.error("Erro ao exportar backup: " + (err.response?.data?.error || err.message), { id: 'backup' });
     }
   };
 
@@ -66,15 +68,15 @@ export const SettingsPage = () => {
     formData.append('backup', file);
 
     try {
-      alert('Restaurando backup... Aguarde.');
+      toast.loading('Restaurando backup... Aguarde.', { id: 'import' });
       await api.post('/backup/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Backup restaurado com sucesso! O sistema será recarregado.');
-      window.location.reload();
+      toast.success('Backup restaurado com sucesso! Recarregando...', { id: 'import' });
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       console.error(err);
-      alert('Erro ao restaurar backup.');
+      toast.error('Erro ao restaurar backup.', { id: 'import' });
     }
   };
 
@@ -82,9 +84,9 @@ export const SettingsPage = () => {
     try {
       await api.post('/settings/system', { key: 'company_name', value: systemState.company_name });
       await api.post('/settings/system', { key: 'company_logo', value: systemState.company_logo });
-      alert('Configurações salvas com sucesso!');
+      toast.success('Configurações salvas com sucesso!');
     } catch (err) {
-      alert('Erro ao salvar configurações.');
+      toast.error('Erro ao salvar configurações.');
     }
   };
 
@@ -127,12 +129,12 @@ export const SettingsPage = () => {
         <button onClick={async () => {
           if (!window.confirm('Isso vai adicionar 10 equipamentos fictícios e várias movimentações no banco. Continuar?')) return;
           try {
-            alert('Gerando dados... Aguarde.');
+            toast.loading('Gerando dados... Aguarde.', { id: 'seed' });
             await api.post('/settings/seed-test');
-            alert('Dados de teste gerados com sucesso!');
-            window.location.reload();
+            toast.success('Dados de teste gerados com sucesso!', { id: 'seed' });
+            setTimeout(() => window.location.reload(), 1500);
           } catch (err) {
-            alert('Erro ao gerar dados de teste.');
+            toast.error('Erro ao gerar dados de teste.', { id: 'seed' });
           }
         }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 shadow-sm transition-colors">
           <Database size={16} /> Gerar Dados de Teste (Mock)
@@ -160,12 +162,29 @@ export const SettingsPage = () => {
         : { name: taxInput };
         
       await api.post(endpointMap[taxonomyModal.type], payload);
-      alert('Item cadastrado com sucesso!');
+      toast.success('Item cadastrado com sucesso!');
       setTaxonomyModal({ open: false, type: null, title: '' });
       setTaxInput('');
       loadSettings();
     } catch(err) {
-      alert("Erro ao criar: " + (err.response?.data?.error || err.message));
+      toast.error("Erro ao criar: " + (err.response?.data?.error || err.message));
+    }
+  };
+
+  const handleDeleteTaxonomy = async (type, id) => {
+    if (!window.confirm('Tem certeza que deseja remover este item?')) return;
+    try {
+      const endpointMap = {
+        'category': '/settings/categories',
+        'manufacturer': '/settings/manufacturers',
+        'model': '/settings/models',
+        'location': '/settings/locations',
+      };
+      await api.delete(`${endpointMap[type]}/${id}`);
+      toast.success('Removido com sucesso!');
+      loadSettings();
+    } catch(err) {
+      toast.error("Erro ao remover: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -183,8 +202,7 @@ export const SettingsPage = () => {
             <tr key={item.id || item.key} className="hover:bg-slate-50 transition-colors">
               {columns.map(c => <td key={c.k} className="px-4 py-3 text-slate-600">{item[c.k]}</td>)}
               <td className="px-4 py-3 text-right">
-                <button className="text-slate-400 hover:text-amber-500 mr-2"><Edit2 size={16}/></button>
-                <button className="text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>
+                <button onClick={() => handleDeleteTaxonomy(entity, item.id || item.key)} className="text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>
               </td>
             </tr>
           ))}

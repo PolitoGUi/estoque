@@ -14,22 +14,17 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
   const [eEvts, setEEvts] = useState([]);
   const [eObs, setEObs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [evtsRes, obsRes, favRes] = await Promise.all([
+        const [evtsRes, obsRes] = await Promise.all([
           api.get(`/events/${e.id}`),
-          api.get(`/observations/${e.id}`),
-          api.get(`/favorites`)
+          api.get(`/observations/${e.id}`)
         ]);
         setEEvts(evtsRes.data);
         setEObs(obsRes.data);
-        if (favRes.data.some(f => f.equipmentId === e.id)) {
-          setIsFav(true);
-        }
       } catch (err) {
         console.error("Erro ao carregar detalhes", err);
       } finally {
@@ -53,15 +48,7 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
     }
   };
 
-  const toggleFav = async () => {
-    try {
-      const res = await api.post('/favorites/toggle', { equipmentId: e.id });
-      setIsFav(res.data.favorited);
-      toast.success(res.data.favorited ? "Adicionado aos favoritos" : "Removido dos favoritos");
-    } catch (err) {
-      toast.error("Erro ao favoritar");
-    }
-  };
+
 
   const renderInlineEdit = (field, label, val) => {
     if (editField === field) {
@@ -139,9 +126,6 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-2xl text-amber-600 tracking-tight">{e.id}</span>
-                  <button onClick={toggleFav} className={`p-1.5 rounded-full transition-colors ${isFav ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-300 hover:text-amber-400 hover:bg-amber-50'}`}>
-                    <Star size={20} fill={isFav ? "currentColor" : "none"} />
-                  </button>
                 </div>
                 <LocBadge loc={loc}/>
               </div>

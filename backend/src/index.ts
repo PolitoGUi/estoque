@@ -15,7 +15,6 @@ import { auditMiddleware } from './middlewares/auditMiddleware';
 
 import dashboardRoutes from './routes/dashboard';
 import issuesRoutes from './routes/issues';
-import favoritesRoutes from './routes/favorites';
 import notificationsRoutes from './routes/notifications';
 import streamRoutes from './routes/stream';
 
@@ -40,7 +39,6 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/issues', issuesRoutes);
-app.use('/api/favorites', favoritesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/stream', streamRoutes);
 
@@ -64,3 +62,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

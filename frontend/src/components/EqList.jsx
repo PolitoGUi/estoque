@@ -10,9 +10,10 @@ import toast from 'react-hot-toast';
 export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [searchParams] = useSearchParams();
   const globalQ = searchParams.get('q') || '';
+  const initialLoc = searchParams.get('loc') || 'all';
   
   const [q, setQ] = useState(globalQ);
-  const [loc, setLoc] = useState("all");
+  const [loc, setLoc] = useState(initialLoc);
   const [cat, setCat] = useState("all");
   const [statusF, setStatusF] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
@@ -41,8 +42,9 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
 
   useEffect(() => {
     setQ(globalQ);
+    setLoc(initialLoc);
     setPage(1);
-  }, [globalQ]);
+  }, [globalQ, initialLoc]);
 
   const toggleSelection = (e, item) => {
     e.stopPropagation();

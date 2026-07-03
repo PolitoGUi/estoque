@@ -13,6 +13,10 @@ export const ReportsPage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('events');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
 
   const loadData = async () => {
     setLoading(true);
@@ -34,6 +38,44 @@ export const ReportsPage = () => {
   useEffect(() => {
     loadData();
   }, [reportType]);
+
+  useEffect(() => {
+    let result = data;
+    
+    // Filter by Search Text
+    if (searchTerm.trim()) {
+      const s = searchTerm.toLowerCase();
+      result = result.filter(row => {
+        return Object.values(row).some(val => 
+          val !== null && val !== undefined && String(val).toLowerCase().includes(s)
+        );
+      });
+    }
+
+    // Filter by Date Range
+    if (startDate || endDate) {
+      result = result.filter(row => {
+        const rowDateStr = row.timestamp || row.createdAt;
+        if (!rowDateStr) return true;
+        const rowDate = new Date(rowDateStr);
+        rowDate.setHours(0,0,0,0);
+        
+        if (startDate) {
+          const sDate = new Date(startDate);
+          sDate.setHours(0,0,0,0);
+          if (rowDate < sDate) return false;
+        }
+        if (endDate) {
+          const eDate = new Date(endDate);
+          eDate.setHours(0,0,0,0);
+          if (rowDate > eDate) return false;
+        }
+        return true;
+      });
+    }
+
+    setFilteredData(result);
+  }, [data, searchTerm, startDate, endDate]);
 
   const cleanData = (dataset) => {
     if (!dataset || dataset.length === 0) return [];
@@ -75,9 +117,9 @@ export const ReportsPage = () => {
     const doc = new jsPDF();
     doc.text(`Relatório de ${reportType === 'events' ? 'Movimentações' : 'Equipamentos'}`, 14, 15);
     
-    if (data.length === 0) return;
+    if (filteredData.length === 0) return;
 
-    const cleaned = cleanData(data);
+    const cleaned = cleanData(filteredData);
     const keys = Object.keys(cleaned[0]);
     const tableData = cleaned.map(row => keys.map(k => String(row[k] || '')));
 
@@ -118,11 +160,22 @@ export const ReportsPage = () => {
               <option value="equipments">Inventário de Equipamentos</option>
             </select>
           </div>
-          <div className="flex-1">
-            <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Período (Opcional)</label>
-            <input type="date" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Busca Textual</label>
+            <input type="text" placeholder="Ex: CLP, WEG, AT-001..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
           </div>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors h-[38px]">
+          <div className="flex-1 min-w-[130px]">
+            <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Data Início</label>
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          </div>
+          <div className="flex-1 min-w-[130px]">
+            <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Data Fim</label>
+            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          </div>
+          <button onClick={() => {}} className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors h-[38px]">
             <Filter size={15}/> Filtrar
           </button>
         </div>
@@ -130,7 +183,7 @@ export const ReportsPage = () => {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="py-12 text-center text-slate-400 animate-pulse">Carregando dados...</div>
-          ) : data.length === 0 ? (
+          ) : filteredData.length === 0 ? (
             <div className="py-12 text-center">
               <FileText size={32} className="text-gray-200 mx-auto mb-3"/>
               <p className="text-slate-400 text-sm">Nenhum dado encontrado para os filtros selecionados.</p>
@@ -165,7 +218,7 @@ export const ReportsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {data.slice(0, 50).map((row, i) => (
+                  {filteredData.slice(0, 50).map((row, i) => (
                     <tr key={i} className="hover:bg-amber-50 transition-colors">
                       {reportType === 'events' ? (
                         <>
@@ -195,9 +248,9 @@ export const ReportsPage = () => {
               </table>
             </div>
           )}
-          {data.length > 50 && (
+          {filteredData.length > 50 && (
             <div className="px-4 py-3 bg-slate-50 text-xs text-slate-500 text-center border-t border-gray-200">
-              Mostrando apenas os 50 primeiros registros. Faça o download para ver todos os {data.length} registros.
+              Mostrando apenas os 50 primeiros registros. Faça o download para ver todos os {filteredData.length} registros.
             </div>
           )}
         </div>

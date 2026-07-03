@@ -325,10 +325,45 @@ export const AdminPage = () => {
             )}
 
             {tab === "roles" && (
-              <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl m-4 bg-slate-50">
-                <Shield size={32} className="text-slate-300 mx-auto mb-3"/>
-                <p className="text-slate-500 font-semibold">Gestão de Perfis será habilitada em breve.</p>
-                <p className="text-sm text-slate-400 mt-1">Atualmente os perfis e permissões são pré-carregados no banco de dados.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-gray-200 text-left">
+                      <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide w-1/4">Perfil (Role)</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Permissões Base</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {roles.map(r => (
+                      <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
+                        <td className="px-4 py-4 font-semibold text-slate-800">
+                          {r.name}
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-1.5">
+                            {r.permissions && r.permissions.length > 0 ? (
+                              r.permissions.map(p => (
+                                <span key={p} className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded font-semibold whitespace-nowrap">
+                                  {PERM_LABELS[p] || p}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">Nenhuma permissão cadastrada</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!roles.length && (
+                      <tr>
+                        <td colSpan="2" className="py-12 text-center text-slate-400">
+                          <Shield size={32} className="text-slate-200 mx-auto mb-3"/>
+                          Nenhum perfil encontrado.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

@@ -1,8 +1,8 @@
 export const LOCS = {
-  almoxarifado: { label: "Almoxarifado",  color: "#64748b", badge: "bg-slate-100 text-slate-700 border border-slate-200", short: "ALMOX" },
-  laboratorio:  { label: "Laboratório",   color: "#8b5cf6", badge: "bg-purple-100 text-purple-700 border border-purple-200", short: "LAB" },
-  campo:        { label: "Campo",         color: "#10b981", badge: "bg-emerald-100 text-emerald-700 border border-emerald-200", short: "CAMPO" },
-  sucata:       { label: "Sucata",        color: "#94a3b8", badge: "bg-gray-100 text-gray-500 border border-gray-200 line-through", short: "SUCATA" }
+  almoxarifado: { label: "Almoxarifado",  color: "#059669", badge: "bg-emerald-100 text-emerald-800", short: "ALMOX" },
+  laboratorio:  { label: "Laboratório",   color: "#2563EB", badge: "bg-blue-100 text-blue-800", short: "LAB" },
+  campo:        { label: "Campo",         color: "#D97706", badge: "bg-amber-100 text-amber-800", short: "CAMPO" },
+  sucata:       { label: "Sucata",        color: "#6B7280", badge: "bg-gray-100 text-gray-700", short: "SUCATA" }
 };
 
 export const OBS_CATS = {
