@@ -1,5 +1,5 @@
 export const LOCS = {
-  almoxarifado: { label: "Almoxarifado",  short: "ESTOQUE", color: "#059669", badge: "bg-emerald-100 text-emerald-800" },
+  almoxarifado: { label: "Almoxarifado",  short: "ALMOX", color: "#059669", badge: "bg-emerald-100 text-emerald-800" },
   laboratorio:  { label: "Laboratório",   short: "LAB",     color: "#2563EB", badge: "bg-blue-100 text-blue-800" },
   campo:        { label: "Campo",         short: "CAMPO",   color: "#D97706", badge: "bg-amber-100 text-amber-800" },
   manutencao:   { label: "Manutenção",    short: "MANUT",   color: "#7C3AED", badge: "bg-violet-100 text-violet-800" },

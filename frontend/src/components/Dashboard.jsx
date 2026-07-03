@@ -47,10 +47,10 @@ export const Dashboard = ({ eq, onSelect }) => {
           const n = counts[key] || 0;
           const pct = eq.length ? (n / eq.length) * 100 : 0;
           return (
-            <div key={key} className="glass-panel rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{n}</div>
-              <div className="text-xs text-slate-500 mt-1 font-bold uppercase tracking-wider">{loc.label}</div>
-              <div className="mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden shadow-inner">
+            <div key={key} className={`glass-panel rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 ${n === 0 ? 'opacity-40 grayscale' : 'hover:shadow-lg hover:-translate-y-1'}`}>
+              <div className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">{n}</div>
+              <div className="text-[10px] md:text-xs text-slate-500 mt-1 font-bold uppercase tracking-wider truncate">{loc.label}</div>
+              <div className="mt-3 md:mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                 <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{background: `linear-gradient(90deg, ${loc.color}88 0%, ${loc.color} 100%)`, width:`${pct}%`}}/>
               </div>
             </div>

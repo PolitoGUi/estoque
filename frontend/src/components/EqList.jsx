@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer } from 'lucide-react';
+import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity } from 'lucide-react';
 import { LOCS } from '../constants';
 import { LocBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
 import { PrintQRGrid } from './PrintQRGrid';
+import api from '../api';
+import toast from 'react-hot-toast';
 
 export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [searchParams] = useSearchParams();
@@ -20,6 +22,22 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
 
   const [selectedEqs, setSelectedEqs] = useState([]);
   const [showPrint, setShowPrint] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const handleBulkAction = async (action, value) => {
+    if (!window.confirm(`Confirmar alteração em lote para ${selectedEqs.length} itens?`)) return;
+    setBulkLoading(true);
+    try {
+      const ids = selectedEqs.map(e => e.id);
+      await api.post('/equipments/bulk', { ids, action, value });
+      toast.success(`Ação aplicada a ${ids.length} equipamentos.`);
+      setSelectedEqs([]);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Erro na ação em lote.");
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
   useEffect(() => {
     setQ(globalQ);
@@ -69,15 +87,29 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           <h2 className="text-xl font-bold text-slate-800">Equipamentos</h2>
           <p className="text-sm text-slate-400 mt-0.5">{filtered.length} equipamentos encontrados</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 justify-end">
           {selectedEqs.length > 0 && (
-            <button onClick={() => setShowPrint(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors shadow-sm animate-in zoom-in-95">
-              <Printer size={15}/> Imprimir Etiquetas ({selectedEqs.length})
-            </button>
+            <div className="flex gap-2 p-1 bg-amber-50 border border-amber-200 rounded-lg animate-in zoom-in-95">
+              <button onClick={() => setShowPrint(true)} disabled={bulkLoading}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm">
+                <Printer size={14}/> Imprimir ({selectedEqs.length})
+              </button>
+              
+              <select onChange={(e) => { if(e.target.value) { handleBulkAction('move', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
+                <option value="">🚀 Mover Selecionados...</option>
+                {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
+              </select>
+
+              <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
+                <option value="">⚙️ Alterar Status...</option>
+                {["Disponível", "Reservado", "Em uso", "Em manutenção", "Aguardando peça", "Sucateado"].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           )}
           <button onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border ${showFilters ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'}`}>
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border ${showFilters ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'}`}>
             <SlidersHorizontal size={15}/> Filtros
           </button>
           {userRole !== 'viewer' && (
@@ -120,19 +152,65 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
-        <div className="overflow-x-auto min-h-[400px]">
+        {/* Mobile View: Cards (max-md:block, md:hidden) */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {paginated.length > 0 && (
+            <div className="p-3 bg-slate-50 border-b border-gray-200 flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  onChange={toggleAll}
+                  checked={paginated.length > 0 && paginated.every(p => selectedEqs.some(x => x.id === p.id))} />
+                Selecionar Todos
+              </label>
+            </div>
+          )}
+          {paginated.map(e => {
+            const l = e.currentLocation || 'almoxarifado';
+            const isSelected = selectedEqs.some(x => x.id === e.id);
+            return (
+              <div key={e.id} onClick={() => onSelect(e)} className={`p-4 flex gap-3 transition-colors ${isSelected ? 'bg-amber-50/50' : 'hover:bg-slate-50'} active:bg-slate-100`}>
+                <div onClick={(ev) => ev.stopPropagation()} className="pt-1">
+                  <input type="checkbox" checked={isSelected} onChange={(ev) => toggleSelection(ev, e)} className="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-bold text-slate-800 leading-tight">{e.description}</h3>
+                      <p className="font-mono text-amber-600 text-xs font-bold mt-0.5">{e.id}</p>
+                    </div>
+                    <ChevronRight size={18} className="text-gray-300 shrink-0 mt-1"/>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1.5">{e.model} · {e.manufacturer}</div>
+                  <div className="text-[11px] font-mono text-slate-400">Pat: {e.patrimony || "S/N"}</div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <LocBadge loc={l} />
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      e.status === 'Disponível' ? 'bg-emerald-100 text-emerald-700' :
+                      e.status === 'Em manutenção' ? 'bg-red-100 text-red-700' :
+                      e.status === 'Sucateado' ? 'bg-gray-100 text-gray-700' :
+                      e.status === 'Em uso' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                    }`}>{e.status || 'Disponível'}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop View: Table (hidden on mobile) */}
+        <div className="overflow-x-auto min-h-[400px] hidden md:block">
           <table className="w-full text-sm text-left">
             <thead>
               <tr className="bg-slate-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left w-10">
+                <th className="px-4 py-3 text-left w-12">
                   <input type="checkbox" 
-                    className="rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
                     onChange={toggleAll}
                     checked={paginated.length > 0 && paginated.every(p => selectedEqs.some(x => x.id === p.id))}
                   />
                 </th>
                 {["ID Interno","Descrição","Patrimônio","Categoria","Localização","Status",""].map(h => (
-                  <th key={h} className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
+                  <th key={h} className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -142,10 +220,10 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                 const isSelected = selectedEqs.some(x => x.id === e.id);
                 return (
                   <tr key={e.id} onClick={() => onSelect(e)}
-                    className={`cursor-pointer transition-colors group ${isSelected ? 'bg-amber-50/50' : 'hover:bg-amber-50'}`}>
+                    className={`cursor-pointer transition-colors group ${isSelected ? 'bg-amber-50/80' : 'hover:bg-amber-50'}`}>
                     <td className="px-4 py-3 text-left" onClick={(ev) => ev.stopPropagation()}>
                       <input type="checkbox" 
-                        className="rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500 cursor-pointer"
                         checked={isSelected}
                         onChange={(ev) => toggleSelection(ev, e)}
                       />
@@ -153,13 +231,13 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                     <td className="px-4 py-3 font-mono font-bold text-amber-600 text-sm">{e.id}</td>
                     <td className="px-4 py-3 min-w-[200px]">
                       <div className="font-semibold text-slate-800">{e.description}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{e.model} · {e.manufacturer}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{e.model} · {e.manufacturer}</div>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{e.patrimony || "—"}</td>
                     <td className="px-4 py-3 text-xs font-medium text-slate-600">{e.category}</td>
                     <td className="px-4 py-3"><LocBadge loc={l}/></td>
                     <td className="px-4 py-3 text-xs font-semibold">
-                      <span className={`px-2 py-1 rounded-full ${
+                      <span className={`px-2 py-1 rounded-md ${
                         e.status === 'Disponível' ? 'bg-emerald-100 text-emerald-700' :
                         e.status === 'Em manutenção' ? 'bg-red-100 text-red-700' :
                         e.status === 'Sucateado' ? 'bg-gray-100 text-gray-700' :

@@ -17,6 +17,8 @@ export const ScannerPage = () => {
     if (!detectedCodes || detectedCodes.length === 0) return;
     const result = detectedCodes[0].rawValue;
     
+    if (navigator.vibrate) navigator.vibrate(100);
+
     try {
       let parsed;
       try {
@@ -35,8 +37,6 @@ export const ScannerPage = () => {
 
   const fetchEq = async (id) => {
     try {
-      // Procurar nos equipamentos (vamos listar todos e achar, ou precisaríamos de rota específica)
-      // Como o /api/equipments lista tudo, podemos filtrar.
       const res = await api.get('/equipments');
       const found = res.data.find(x => x.id === id);
       if (found) {
@@ -59,10 +59,10 @@ export const ScannerPage = () => {
         destination: dest,
         notes: `Movimentação rápida via Scanner Mobile.`
       });
-      toast.success("Movimentação registrada com sucesso!");
+      toast.success(`Movido para ${LOCS[dest]?.label || dest} com sucesso!`);
+      // Retorna instantaneamente para a câmera
       setScanResult(null);
       setEq(null);
-      setTimeout(() => window.location.reload(), 1000); // Reload scanner
     } catch (e) {
       toast.error(e.response?.data?.error || "Erro ao movimentar");
     } finally {
@@ -148,7 +148,7 @@ export const ScannerPage = () => {
                     className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-colors">
                     <FileText size={18}/> Ver Histórico e Detalhes
                   </button>
-                  <button onClick={() => { setScanResult(null); setEq(null); window.location.reload(); }}
+                  <button onClick={() => { setScanResult(null); setEq(null); }}
                     className="w-full py-3 bg-transparent text-slate-400 font-bold rounded-xl hover:text-white transition-colors">
                     Cancelar
                   </button>
@@ -160,7 +160,7 @@ export const ScannerPage = () => {
                   <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
                   <p className="mt-4 text-slate-400 font-medium">Buscando dados no servidor...</p>
                 </div>
-                <button onClick={() => { setScanResult(null); window.location.reload(); }}
+                <button onClick={() => { setScanResult(null); }}
                     className="mt-6 py-2 px-6 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition-colors">
                     Cancelar
                 </button>

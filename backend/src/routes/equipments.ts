@@ -91,4 +91,44 @@ router.put('/:id/status', requirePermission('equipment.move'), async (req: AuthR
   }
 });
 
+router.post('/bulk', requirePermission('equipment.move'), async (req: AuthRequest, res) => {
+  const { ids, action, value } = req.body;
+  
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "Nenhum equipamento selecionado." });
+  }
+
+  try {
+    if (action === 'status') {
+      await prisma.equipment.updateMany({
+        where: { id: { in: ids } },
+        data: { status: value }
+      });
+      req.auditInfo = { action: 'EQUIPMENT_BULK_STATUS', resource: 'MULTIPLE', newData: { ids, status: value } };
+    } else if (action === 'move') {
+      await prisma.$transaction(async (tx) => {
+        await tx.equipment.updateMany({
+          where: { id: { in: ids } },
+          data: { version: { increment: 1 } }
+        });
+        
+        const eventData = ids.map(id => ({
+          equipmentId: id,
+          type: 'transferencia',
+          destination: value,
+          userId: Number(req.user!.id),
+          notes: 'Movimentação em lote'
+        }));
+        await tx.event.createMany({ data: eventData });
+      });
+      req.auditInfo = { action: 'EQUIPMENT_BULK_MOVE', resource: 'MULTIPLE', newData: { ids, destination: value } };
+    }
+
+    broadcastUpdate('refresh');
+    res.json({ success: true, count: ids.length });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default router;

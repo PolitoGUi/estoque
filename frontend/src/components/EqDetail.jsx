@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2 } from 'lucide-react';
+import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X } from 'lucide-react';
 import api from '../api';
 import { LOCS, OBS_CATS } from '../constants';
 import { fmtDate } from '../utils/helpers';
@@ -33,6 +33,41 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
     };
     fetchData();
   }, [e.id, refreshKey]);
+
+  const [editField, setEditField] = useState(null);
+  const [editVal, setEditVal] = useState("");
+
+  const saveInline = async (field) => {
+    try {
+      await api.put(`/equipments/${e.id}`, { [field]: editVal });
+      toast.success("Atualizado com sucesso.");
+      e[field] = editVal; // Optimistic
+      setEditField(null);
+    } catch (err) {
+      toast.error("Erro ao salvar.");
+    }
+  };
+
+  const renderInlineEdit = (field, label, val) => {
+    if (editField === field) {
+      return (
+        <div className="flex items-center gap-2 mt-1">
+          <input autoFocus value={editVal} onChange={e => setEditVal(e.target.value)} 
+            className="w-full px-2 py-1 text-sm font-mono border border-amber-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 bg-amber-50" />
+          <button onClick={() => saveInline(field)} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"><Check size={16}/></button>
+          <button onClick={() => setEditField(null)} className="p-1 text-slate-400 hover:bg-slate-50 rounded"><X size={16}/></button>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2 mt-1 group">
+        <div className="text-base font-mono font-bold text-slate-700">{val || "—"}</div>
+        <button onClick={() => { setEditField(field); setEditVal(val || ""); }} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-amber-500 transition-opacity">
+          <Edit2 size={14}/>
+        </button>
+      </div>
+    );
+  };
 
   const loc  = e.currentLocation || 'almoxarifado';
   const L    = LOCS[loc] || LOCS.almoxarifado;
@@ -118,11 +153,11 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
                 <div className="grid grid-cols-2 gap-y-6 gap-x-8">
                   <div>
                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Patrimônio</label>
-                    <div className="text-base font-mono font-bold text-slate-700 mt-1">{e.patrimony || "—"}</div>
+                    {renderInlineEdit('patrimony', 'Patrimônio', e.patrimony)}
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nº de Série</label>
-                    <div className="text-base font-mono font-bold text-slate-700 mt-1">{e.serial || "—"}</div>
+                    {renderInlineEdit('serial', 'Nº de Série', e.serial)}
                   </div>
                 </div>
               </div>

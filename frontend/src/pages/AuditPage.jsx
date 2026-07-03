@@ -2,17 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { MainLayout } from './MainLayout';
 import api from '../api';
 import { fmtDate } from '../utils/helpers';
-import { ChevronLeft, ChevronRight, FileText, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Search, Filter } from 'lucide-react';
+
+const ACTION_TRANSLATIONS = {
+  'LOGIN_SUCCESS': { label: 'Login Efetuado', style: 'bg-emerald-100 text-emerald-700' },
+  'LOGIN_FAILED': { label: 'Falha no Login', style: 'bg-red-100 text-red-700' },
+  'EQUIPMENT_CREATE': { label: 'Ativo Cadastrado', style: 'bg-blue-100 text-blue-700' },
+  'EQUIPMENT_STATUS_UPDATE': { label: 'Status Alterado', style: 'bg-amber-100 text-amber-700' },
+  'EQUIPMENT_BULK_MOVE': { label: 'Movimento Lote', style: 'bg-indigo-100 text-indigo-700' },
+  'EQUIPMENT_BULK_STATUS': { label: 'Status Lote', style: 'bg-indigo-100 text-indigo-700' },
+  'USER_CREATE': { label: 'Usuário Criado', style: 'bg-teal-100 text-teal-700' },
+  'USER_UPDATE': { label: 'Usuário Editado', style: 'bg-teal-100 text-teal-700' },
+  'USER_PASSWORD_RESET': { label: 'Senha Redefinida', style: 'bg-rose-100 text-rose-700' }
+};
 
 export const AuditPage = () => {
   const [data, setData] = useState({ logs: [], total: 0, page: 1, limit: 50, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [actionFilter, setActionFilter] = useState("");
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/audit?page=${page}&limit=50`);
+      const query = `page=${page}&limit=50${actionFilter ? `&action=${actionFilter}` : ''}`;
+      const res = await api.get(`/audit?${query}`);
       setData(res.data);
     } catch (err) {
       console.error(err);
@@ -23,7 +37,7 @@ export const AuditPage = () => {
 
   useEffect(() => {
     fetchLogs();
-  }, [page]);
+  }, [page, actionFilter]);
 
   return (
     <MainLayout view="audit">
@@ -34,7 +48,14 @@ export const AuditPage = () => {
             <p className="text-sm text-slate-400 mt-0.5">Histórico completo de auditoria</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Future specific filters can go here */}
+            <div className="relative">
+              <select value={actionFilter} onChange={e => { setActionFilter(e.target.value); setPage(1); }}
+                className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 appearance-none shadow-sm cursor-pointer">
+                <option value="">Todas as Ações</option>
+                {Object.keys(ACTION_TRANSLATIONS).map(k => <option key={k} value={k}>{ACTION_TRANSLATIONS[k].label}</option>)}
+              </select>
+              <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+            </div>
           </div>
         </div>
 
@@ -59,7 +80,13 @@ export const AuditPage = () => {
                   <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtDate(log.timestamp)}</td>
                     <td className="px-4 py-3">
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs font-semibold">{log.action}</span>
+                      {ACTION_TRANSLATIONS[log.action] ? (
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase ${ACTION_TRANSLATIONS[log.action].style}`}>
+                          {ACTION_TRANSLATIONS[log.action].label}
+                        </span>
+                      ) : (
+                        <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase">{log.action}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600 font-medium">{log.resource}</td>
                     <td className="px-4 py-3 text-slate-500">{log.user?.name || log.user?.email || 'Sistema / Anonimo'}</td>
