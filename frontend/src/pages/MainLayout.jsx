@@ -23,6 +23,11 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
   const activeNav = view === "detail" ? "list" : view;
   const isAdmin = user?.role === 'Administrador' || user?.role?.name === 'Administrador';
 
+  const handleLogout = () => {
+    logout();
+    navigate('/', { replace: true });
+  };
+
   const [notifs, setNotifs] = useState([]);
   const [showNotifs, setShowNotifs] = useState(false);
   const notifRef = useRef(null);
@@ -147,7 +152,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
               <div className="text-xs text-amber-500 font-semibold capitalize truncate">{user?.role?.name || user?.role}</div>
             </div>
           </div>
-          <button onClick={logout} className="text-xs text-slate-400 hover:text-white flex items-center justify-center bg-slate-800 hover:bg-slate-700 py-2 rounded-lg font-semibold w-full transition-colors">
+          <button onClick={handleLogout} className="text-xs text-slate-400 hover:text-white flex items-center justify-center bg-slate-800 hover:bg-slate-700 py-2 rounded-lg font-semibold w-full transition-colors">
             Sair do sistema
           </button>
         </div>
@@ -233,7 +238,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
             <span className="text-[10px] font-bold mt-1">Relat.</span>
           </button>
         )}
-        <button onClick={logout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
+        <button onClick={handleLogout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
           <Users size={22} />
           <span className="text-[10px] font-bold mt-1">Sair</span>
         </button>
