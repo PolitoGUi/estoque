@@ -23,7 +23,7 @@ export const HomeApp = () => {
   
   const [moveEq,  setMoveEq]  = useState(null);
   const [obsModal, setObsModal] = useState({ eq: null, cat: "observacao" });
-  const [showNew, setShowNew] = useState(false);
+  const [newEqData, setNewEqData] = useState(null);
   const [statusModal, setStatusModal] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -91,19 +91,20 @@ export const HomeApp = () => {
   return (
     <MainLayout view={view} setView={setView} setSelEq={setSelEq}>
       {view === "dashboard" && <Dashboard eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} />}
-      {view === "list" && <EqList eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} onNew={() => setShowNew(true)} canCreate={hasPermission('equipment.create')} />}
+      {view === "list" && <EqList eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} onNew={() => setNewEqData({})} canCreate={hasPermission('equipment.create')} />}
       {view === "location" && <ByLocation eq={eq} onSelect={e => { setSelEq(e); setView("detail"); }} />}
       {view === "detail" && selEq && (
         <EqDetail e={selEq} refreshKey={refreshKey}
           onBack={() => { setSelEq(null); setView("list"); reloadAll(); }}
           onMove={e => setMoveEq(e)}
           onObs={(e, cat) => setObsModal({ eq: e, cat })}
+          onDuplicate={(init) => setNewEqData(init)}
         />
       )}
 
       {moveEq && <MoveModal e={moveEq} onSave={reloadAll} onClose={() => setMoveEq(null)} />}
       {obsModal.eq && <ObsModal e={obsModal.eq} initCat={obsModal.cat} onSave={reloadAll} onClose={() => setObsModal({ eq: null, cat: "observacao" })} />}
-      {showNew && <NewEqModal eqList={eq} onSave={reloadAll} onClose={() => setShowNew(false)} />}
+      {newEqData && <NewEqModal eqList={eq} initialData={newEqData} onSave={reloadAll} onClose={() => setNewEqData(null)} />}
       {statusModal && <StatusModal e={statusModal} onSave={reloadAll} onClose={() => setStatusModal(null)} />}
     </MainLayout>
   );

@@ -142,11 +142,16 @@ export const ObsModal = ({ e, initCat, onSave, onClose }) => {
   );
 };
 
-export const NewEqModal = ({ eqList, onSave, onClose }) => {
+export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
   const newId = genId(eqList);
   const [f, setF] = useState({
-    description:"", model:"", manufacturer:"", category:"CLP",
-    serial:"", patrimony:"", notes:""
+    description: initialData.description || "",
+    model: initialData.model || "",
+    manufacturer: initialData.manufacturer || "",
+    category: initialData.category || "CLP",
+    serial: initialData.serial || "",
+    patrimony: initialData.patrimony || "",
+    notes: initialData.notes || ""
   });
   const [loading, setLoading] = useState(false);
   const set   = (k, v) => setF(p => ({...p, [k]: v}));
@@ -165,6 +170,25 @@ export const NewEqModal = ({ eqList, onSave, onClose }) => {
       toast.error(err.response?.data?.error || "Erro ao cadastrar.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const knownModels = Array.from(new Set(eqList.map(e => e.model).filter(Boolean)));
+
+  const handleModelBlur = () => {
+    if (!f.model) return;
+    const existing = eqList.find(e => e.model?.trim().toLowerCase() === f.model.trim().toLowerCase());
+    if (existing) {
+      let updated = false;
+      const nextF = { ...f };
+      if (!nextF.description && existing.description) { nextF.description = existing.description; updated = true; }
+      if (!nextF.manufacturer && existing.manufacturer) { nextF.manufacturer = existing.manufacturer; updated = true; }
+      if (nextF.category === "CLP" && existing.category && existing.category !== "CLP") { nextF.category = existing.category; updated = true; }
+      
+      if (updated) {
+        setF(nextF);
+        toast.success("Dados preenchidos automaticamente com base no modelo!");
+      }
     }
   };
 
@@ -190,8 +214,11 @@ export const NewEqModal = ({ eqList, onSave, onClose }) => {
           </div>
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Modelo *</label>
-            <input className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="CPU 315-2 DP" value={f.model} onChange={ev => set("model", ev.target.value)}/>
+            <input list="known-models" className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              placeholder="CPU 315-2 DP" value={f.model} onChange={ev => set("model", ev.target.value)} onBlur={handleModelBlur}/>
+            <datalist id="known-models">
+              {knownModels.map(m => <option key={m} value={m} />)}
+            </datalist>
           </div>
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Categoria *</label>

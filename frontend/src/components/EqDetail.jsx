@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X, Star, Wrench } from 'lucide-react';
+import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X, Star, Wrench, Copy } from 'lucide-react';
 import api from '../api';
 import { LOCS, OBS_CATS, EQ_HEALTH } from '../constants';
 import { fmtDate } from '../utils/helpers';
@@ -9,7 +9,7 @@ import { QRCodeModal } from './Modals';
 import { Timeline } from './Timeline';
 import { QRCodeCanvas } from 'qrcode.react';
 
-export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
+export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs, onDuplicate }) => {
   const [tab, setTab] = useState("info");
   const [eEvts, setEEvts] = useState([]);
   const [eObs, setEObs] = useState([]);
@@ -112,6 +112,10 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
             <button onClick={() => onMove(e)}
               className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors shadow-sm ml-2">
               <ArrowRight size={14}/> Movimentar
+            </button>
+            <button onClick={() => onDuplicate && onDuplicate({ description: e.description, model: e.model, manufacturer: e.manufacturer, category: e.category, notes: e.notes })}
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors shadow-sm ml-1">
+              <Copy size={14}/> Duplicar
             </button>
           </div>
         )}
