@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, Wrench, Bell, Check, Trash2 } from 'lucide-react';
+import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, User, Wrench, Bell, Check, Trash2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
@@ -232,9 +232,9 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           <span className="absolute bottom-2 text-[10px] font-bold text-amber-50">Scanner</span>
         </div>
 
-        <button onClick={handleLogout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
-          <Users size={22} />
-          <span className="text-[10px] font-bold mt-1">Sair</span>
+        <button onClick={() => navigate('/?view=profile')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'profile' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
+          <User size={22} className={activeNav === 'profile' ? 'drop-shadow-md' : ''}/>
+          <span className="text-[10px] font-bold mt-1">Perfil</span>
         </button>
       </nav>
     </div>

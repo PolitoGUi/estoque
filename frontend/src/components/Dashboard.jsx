@@ -49,10 +49,14 @@ export const Dashboard = ({ eq, onSelect }) => {
         {Object.entries(LOCS).map(([key, loc]) => {
           const n = counts[key] || 0;
           const pct = eq.length ? (n / eq.length) * 100 : 0;
+          
+          // Hide "cliente" location on mobile to keep it to 4 main cards
+          const mobileHidden = key === 'cliente' ? 'hidden md:block' : '';
+
           return (
-            <div key={key} onClick={() => navigate(`/?view=list&loc=${key}`)} className={`glass-panel rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 cursor-pointer ${n === 0 ? 'opacity-40 grayscale' : 'hover:shadow-lg hover:-translate-y-1'}`}>
+            <div key={key} onClick={() => navigate(`/?view=list&loc=${key}`)} className={`glass-panel rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 cursor-pointer ${n === 0 ? 'opacity-40 grayscale' : 'hover:shadow-lg hover:-translate-y-1'} ${mobileHidden}`}>
               <div className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">{n}</div>
-              <div className="text-[10px] md:text-xs text-slate-500 mt-1 font-bold uppercase tracking-wider truncate">{loc.label}</div>
+              <div className="text-[10px] md:text-xs text-slate-500 mt-1 font-bold uppercase tracking-wider truncate">{key === 'manutencao' ? 'Com Defeito' : loc.label}</div>
               <div className="mt-3 md:mt-4 h-1.5 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                 <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{background: `linear-gradient(90deg, ${loc.color}88 0%, ${loc.color} 100%)`, width:`${pct}%`}}/>
               </div>
@@ -72,7 +76,7 @@ export const Dashboard = ({ eq, onSelect }) => {
             <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{metrics.movimentacoesHoje}</div>
           </div>
         </div>
-        <div className="glass-panel rounded-2xl p-5 flex items-center gap-5 hover:shadow-lg transition-all duration-300">
+        <div className="glass-panel rounded-2xl p-5 md:flex items-center gap-5 hover:shadow-lg transition-all duration-300 hidden">
           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
             <Calendar size={28} />
           </div>
@@ -81,7 +85,7 @@ export const Dashboard = ({ eq, onSelect }) => {
             <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{metrics.movimentacoesSemana}</div>
           </div>
         </div>
-        <div className="glass-panel rounded-2xl p-5 flex items-center gap-5 hover:shadow-lg transition-all duration-300">
+        <div className="glass-panel rounded-2xl p-5 md:flex items-center gap-5 hover:shadow-lg transition-all duration-300 hidden">
           <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-500 to-orange-400 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
             <AlertTriangle size={28} />
           </div>
@@ -92,7 +96,18 @@ export const Dashboard = ({ eq, onSelect }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Botão Gigante Scanner Mobile */}
+      <div className="md:hidden">
+        <button onClick={() => navigate('/scanner')}
+          className="w-full flex flex-col items-center justify-center gap-3 bg-slate-900 text-white p-6 rounded-2xl shadow-xl hover:bg-slate-800 active:scale-95 transition-all">
+          <div className="p-4 bg-amber-500 rounded-full text-white shadow-lg shadow-amber-500/40 animate-pulse">
+            <QrCode size={32} />
+          </div>
+          <span className="text-lg font-bold">Ler Etiqueta QR</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 hidden md:grid">
         <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[400px] shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2 shrink-0">
             <Activity size={16} className="text-slate-400"/>

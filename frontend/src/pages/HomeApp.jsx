@@ -7,6 +7,7 @@ import { Dashboard } from '../components/Dashboard';
 import { EqList } from '../components/EqList';
 import { ByLocation } from '../components/ByLocation';
 import { EqDetail } from '../components/EqDetail';
+import { Profile } from '../components/Profile';
 import { MoveModal, ObsModal, NewEqModal, StatusModal } from '../components/Modals';
 import { useRealtime } from '../hooks/useRealtime';
 
@@ -101,6 +102,7 @@ export const HomeApp = () => {
           onDuplicate={(init) => setNewEqData(init)}
         />
       )}
+      {view === "profile" && <Profile />}
 
       {moveEq && <MoveModal e={moveEq} onSave={reloadAll} onClose={() => setMoveEq(null)} />}
       {obsModal.eq && <ObsModal e={obsModal.eq} initCat={obsModal.cat} onSave={reloadAll} onClose={() => setObsModal({ eq: null, cat: "observacao" })} />}
