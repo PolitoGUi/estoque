@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity, MoveRight, Settings2, ChevronDown } from 'lucide-react';
+import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity, MoveRight, Settings2, ChevronDown, Check } from 'lucide-react';
 import { LOCS, EQ_STATUS } from '../constants';
 import { LocBadge, StatusBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
@@ -24,6 +24,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
   const [selectedEqs, setSelectedEqs] = useState([]);
   const [showPrint, setShowPrint] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkAction, setBulkAction] = useState({ type: null, value: '' });
 
   const handleBulkAction = async (action, value) => {
     if (!window.confirm(`Confirmar alteração em lote para ${selectedEqs.length} itens?`)) return;
@@ -98,7 +99,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
               </button>
               <div className="relative flex items-center">
                 <MoveRight size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
-                <select onChange={(e) => { if(e.target.value) { handleBulkAction('move', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                <select value={bulkAction.type === 'move' ? bulkAction.value : ''} onChange={(e) => setBulkAction({ type: 'move', value: e.target.value })} disabled={bulkLoading}
                   className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
                   <option value="">Mover Selecionados...</option>
                   {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
@@ -108,13 +109,20 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
 
               <div className="relative flex items-center">
                 <Settings2 size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
-                <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
+                <select value={bulkAction.type === 'status' ? bulkAction.value : ''} onChange={(e) => setBulkAction({ type: 'status', value: e.target.value })} disabled={bulkLoading}
                   className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
                   <option value="">Alterar Status...</option>
                   {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
                 </select>
                 <ChevronDown size={13} className="absolute right-2 text-slate-400 pointer-events-none" />
               </div>
+              
+              {bulkAction.value && (
+                <button onClick={() => { handleBulkAction(bulkAction.type, bulkAction.value); setBulkAction({ type: null, value: '' }); }}
+                  className="px-3 py-1.5 bg-amber-500 text-white rounded-md text-xs font-bold hover:bg-amber-600 transition-colors animate-in zoom-in flex items-center gap-1 shadow-sm">
+                  <Check size={14}/> Aplicar
+                </button>
+              )}
             </div>
           )}
           <button onClick={() => setShowFilters(!showFilters)}

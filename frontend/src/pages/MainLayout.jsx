@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, Wrench, Bell, Check, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
 import { fmtDate } from '../utils/helpers';
@@ -16,7 +16,8 @@ const NAV = [
 export const MainLayout = ({ view, setView, setSelEq, children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const searchInputRef = React.useRef(null);
   
   const activeNav = view === "detail" ? "list" : view;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Download, Filter, FileText } from 'lucide-react';
+import { ChevronLeft, Download, Filter, FileText, MapPin } from 'lucide-react';
+import { LOCS } from '../constants';
 import api from '../api';
 import { fmtDate } from '../utils/helpers';
 import * as XLSX from 'xlsx';
@@ -16,6 +17,7 @@ export const ReportsPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationFilter, setLocationFilter] = useState('all');
   const [filteredData, setFilteredData] = useState([]);
 
   const loadData = async () => {
@@ -72,10 +74,19 @@ export const ReportsPage = () => {
         }
         return true;
       });
+    // Filter by Location
+    if (locationFilter !== 'all') {
+      result = result.filter(row => {
+        if (reportType === 'events') {
+          return row.origin === locationFilter || row.destination === locationFilter;
+        } else {
+          return row.currentLocation === locationFilter;
+        }
+      });
     }
 
     setFilteredData(result);
-  }, [data, searchTerm, startDate, endDate]);
+  }, [data, searchTerm, startDate, endDate, locationFilter, reportType]);
 
   const cleanData = (dataset) => {
     if (!dataset || dataset.length === 0) return [];
@@ -164,6 +175,14 @@ export const ReportsPage = () => {
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Busca Textual</label>
             <input type="text" placeholder="Ex: CLP, WEG, AT-001..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          </div>
+          <div className="flex-1 min-w-[150px]">
+            <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Localização</label>
+            <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="all">Todas</option>
+              {Object.entries(LOCS).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
           </div>
           <div className="flex-1 min-w-[130px]">
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide block mb-1.5">Data Início</label>
