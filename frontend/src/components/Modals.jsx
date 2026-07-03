@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowRight, Tag } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowRight, Tag, X, Calendar, User, Key, MapPin, CheckSquare, Plus, Check } from 'lucide-react';
 import api from '../api';
 import { LOCS, OBS_CATS } from '../constants';
 import { genId } from '../utils/helpers';
@@ -142,6 +142,77 @@ export const ObsModal = ({ e, initCat, onSave, onClose }) => {
   );
 };
 
+export const ConfirmDialog = ({ title, message, onConfirm, onCancel, confirmText = "Confirmar", cancelText = "Cancelar", danger = false }) => {
+  return (
+    <Modal title={title} onClose={onCancel}>
+      <div className="space-y-4">
+        <p className="text-sm text-slate-600">{message}</p>
+        <div className="flex gap-3 pt-2">
+          <button onClick={onCancel}
+            className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+            {cancelText}
+          </button>
+          <button onClick={() => { onConfirm(); onCancel(); }}
+            className={`flex-1 py-2.5 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm ${danger ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'}`}>
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+const ComboBox = ({ value, onChange, options, onBlur, placeholder }) => {
+  const [open, setOpen] = useState(false);
+  const [filtered, setFiltered] = useState(options);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <input
+        className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={placeholder}
+        value={value}
+        onChange={e => {
+          onChange(e.target.value);
+          setFiltered(options.filter(o => o.toLowerCase().includes(e.target.value.toLowerCase())));
+          setOpen(true);
+        }}
+        onFocus={() => {
+          setFiltered(options.filter(o => o.toLowerCase().includes(value.toLowerCase())));
+          setOpen(true);
+        }}
+        onBlur={onBlur}
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {filtered.map(o => (
+            <div key={o}
+              className="px-3 py-2 text-sm text-slate-700 hover:bg-amber-50 cursor-pointer transition-colors"
+              onMouseDown={(e) => {
+                e.preventDefault(); 
+                onChange(o);
+                setOpen(false);
+                if (onBlur) setTimeout(onBlur, 50);
+              }}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
   const newId = genId(eqList);
   const [f, setF] = useState({
@@ -214,11 +285,13 @@ export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
           </div>
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Modelo *</label>
-            <input list="known-models" className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="CPU 315-2 DP" value={f.model} onChange={ev => set("model", ev.target.value)} onBlur={handleModelBlur}/>
-            <datalist id="known-models">
-              {knownModels.map(m => <option key={m} value={m} />)}
-            </datalist>
+            <ComboBox 
+              options={knownModels}
+              placeholder="CPU 315-2 DP"
+              value={f.model}
+              onChange={val => set("model", val)}
+              onBlur={handleModelBlur}
+            />
           </div>
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Categoria *</label>

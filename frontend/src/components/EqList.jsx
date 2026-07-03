@@ -4,6 +4,7 @@ import { LOCS, EQ_STATUS } from '../constants';
 import { LocBadge, StatusBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
 import { PrintQRGrid } from './PrintQRGrid';
+import { ConfirmDialog } from './Modals';
 import api from '../api';
 import toast from 'react-hot-toast';
 
@@ -25,9 +26,9 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
   const [showPrint, setShowPrint] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkAction, setBulkAction] = useState({ type: null, value: '' });
+  const [confirmBulk, setConfirmBulk] = useState(null);
 
-  const handleBulkAction = async (action, value) => {
-    if (!window.confirm(`Confirmar alteração em lote para ${selectedEqs.length} itens?`)) return;
+  const executeBulkAction = async (action, value) => {
     setBulkLoading(true);
     try {
       const ids = selectedEqs.map(e => e.id);
@@ -39,6 +40,10 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
     } finally {
       setBulkLoading(false);
     }
+  };
+
+  const handleBulkAction = (action, value) => {
+    setConfirmBulk({ action, value });
   };
 
   useEffect(() => {
@@ -287,6 +292,15 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
           </div>
         )}
       </div>
+
+      {confirmBulk && (
+        <ConfirmDialog
+          title="Ação em Lote"
+          message={`Confirmar alteração em lote para ${selectedEqs.length} itens selecionados?`}
+          onConfirm={() => executeBulkAction(confirmBulk.action, confirmBulk.value)}
+          onCancel={() => setConfirmBulk(null)}
+        />
+      )}
     </div>
   );
 };

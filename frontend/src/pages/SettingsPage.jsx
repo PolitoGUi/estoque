@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MainLayout } from './MainLayout';
 import api from '../api';
 import { Modal } from '../components/Modal';
+import { ConfirmDialog } from '../components/Modals';
 import { Database, Settings, Layers, Folder, Download, Upload, Trash2, Plus, Edit2, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -9,6 +10,7 @@ export const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('system');
   const [data, setData] = useState({ categories: [], manufacturers: [], models: [], locations: [], system: [] });
   const [loading, setLoading] = useState(true);
+  const [confirmState, setConfirmState] = useState(null);
   const fileInputRef = useRef(null);
 
   const loadSettings = async () => {
@@ -62,22 +64,27 @@ export const SettingsPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!window.confirm('CUIDADO: A restauração substituirá todos os dados atuais. Deseja continuar?')) return;
+    setConfirmState({
+      title: 'Atenção',
+      message: 'CUIDADO: A restauração substituirá todos os dados atuais. Deseja continuar?',
+      danger: true,
+      onConfirm: async () => {
+        const formData = new FormData();
+        formData.append('backup', file);
 
-    const formData = new FormData();
-    formData.append('backup', file);
-
-    try {
-      toast.loading('Restaurando backup... Aguarde.', { id: 'import' });
-      await api.post('/backup/import', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.success('Backup restaurado com sucesso! Recarregando...', { id: 'import' });
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao restaurar backup.', { id: 'import' });
-    }
+        try {
+          toast.loading('Restaurando backup... Aguarde.', { id: 'import' });
+          await api.post('/backup/import', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          toast.success('Backup restaurado com sucesso! Recarregando...', { id: 'import' });
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+          console.error(err);
+          toast.error('Erro ao restaurar backup.', { id: 'import' });
+        }
+      }
+    });
   };
 
   const saveSystemSettings = async () => {
@@ -127,15 +134,20 @@ export const SettingsPage = () => {
       <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2 mt-8 pt-4">Ambiente de Testes</h3>
       <div className="flex gap-4">
         <button onClick={async () => {
-          if (!window.confirm('Isso vai adicionar 10 equipamentos fictícios e várias movimentações no banco. Continuar?')) return;
-          try {
-            toast.loading('Gerando dados... Aguarde.', { id: 'seed' });
-            await api.post('/settings/seed-test');
-            toast.success('Dados de teste gerados com sucesso!', { id: 'seed' });
-            setTimeout(() => window.location.reload(), 1500);
-          } catch (err) {
-            toast.error('Erro ao gerar dados de teste.', { id: 'seed' });
-          }
+          setConfirmState({
+            title: 'Gerar Dados de Teste',
+            message: 'Isso vai adicionar 10 equipamentos fictícios e várias movimentações no banco. Continuar?',
+            onConfirm: async () => {
+              try {
+                toast.loading('Gerando dados... Aguarde.', { id: 'seed' });
+                await api.post('/settings/seed-test');
+                toast.success('Dados de teste gerados com sucesso!', { id: 'seed' });
+                setTimeout(() => window.location.reload(), 1500);
+              } catch (err) {
+                toast.error('Erro ao gerar dados de teste.', { id: 'seed' });
+              }
+            }
+          });
         }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 shadow-sm transition-colors">
           <Database size={16} /> Gerar Dados de Teste (Mock)
         </button>
@@ -172,20 +184,26 @@ export const SettingsPage = () => {
   };
 
   const handleDeleteTaxonomy = async (type, id) => {
-    if (!window.confirm('Tem certeza que deseja remover este item?')) return;
-    try {
-      const endpointMap = {
-        'category': '/settings/categories',
-        'manufacturer': '/settings/manufacturers',
-        'model': '/settings/models',
-        'location': '/settings/locations',
-      };
-      await api.delete(`${endpointMap[type]}/${id}`);
-      toast.success('Removido com sucesso!');
-      loadSettings();
-    } catch(err) {
-      toast.error("Erro ao remover: " + (err.response?.data?.error || err.message));
-    }
+    setConfirmState({
+      title: 'Remover Item',
+      message: 'Tem certeza que deseja remover este item?',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const endpointMap = {
+            'category': '/settings/categories',
+            'manufacturer': '/settings/manufacturers',
+            'model': '/settings/models',
+            'location': '/settings/locations',
+          };
+          await api.delete(`${endpointMap[type]}/${id}`);
+          toast.success('Removido com sucesso!');
+          loadSettings();
+        } catch(err) {
+          toast.error("Erro ao remover: " + (err.response?.data?.error || err.message));
+        }
+      }
+    });
   };
 
   const renderTable = (items, columns, entity) => (
@@ -277,21 +295,31 @@ export const SettingsPage = () => {
           </div>
         </div>
       </div>
-      
       {taxonomyModal.open && (
         <Modal title={taxonomyModal.title} onClose={() => setTaxonomyModal({ open: false, type: null, title: '' })}>
           <form onSubmit={handleCreateTaxonomy} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Nome</label>
-              <input required autoFocus value={taxInput} onChange={e => setTaxInput(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500" />
+              <label className="text-sm font-semibold text-slate-600 block mb-1">Nome</label>
+              <input autoFocus type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                value={taxInput} onChange={e => setTaxInput(e.target.value)} />
             </div>
-            <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button type="button" onClick={() => setTaxonomyModal({ open: false, type: null, title: '' })} className="flex-1 py-2 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
-              <button type="submit" className="flex-1 py-2 font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors">Salvar Item</button>
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setTaxonomyModal({ open: false, type: null, title: '' })}
+                className="flex-1 py-2 border border-gray-200 text-gray-600 rounded-lg font-semibold">Cancelar</button>
+              <button type="submit" disabled={!taxInput.trim()}
+                className="flex-1 py-2 bg-amber-500 text-white rounded-lg font-semibold disabled:opacity-50">Salvar</button>
             </div>
           </form>
         </Modal>
+      )}
+      {confirmState && (
+        <ConfirmDialog
+          title={confirmState.title}
+          message={confirmState.message}
+          danger={confirmState.danger}
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </MainLayout>
   );
