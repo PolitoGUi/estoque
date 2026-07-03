@@ -99,13 +99,13 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
               
               <select onChange={(e) => { if(e.target.value) { handleBulkAction('move', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
                 className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
-                <option value="">🚀 Mover Selecionados...</option>
+                <option value="">Mover Selecionados...</option>
                 {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
               </select>
 
               <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
                 className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
-                <option value="">⚙️ Alterar Status...</option>
+                <option value="">Alterar Status...</option>
                 {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
               </select>
             </div>
