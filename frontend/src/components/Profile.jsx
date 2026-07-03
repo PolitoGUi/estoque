@@ -3,7 +3,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, Key, LogOut, Users, Settings, FileText, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { ForcePasswordChangeModal } from '../App'; // If needed, or just let App handle it. Wait, manual change needs a way to trigger it.
 
 export const Profile = () => {
   const { user, logout, hasPermission } = useAuth();
