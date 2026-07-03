@@ -234,35 +234,18 @@ export const AdminPage = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-800">Painel de Administração</h2>
-            <p className="text-sm text-slate-400 mt-0.5">Gestão de usuários, perfis e permissões</p>
+            <p className="text-sm text-slate-400 mt-0.5">Gestão de usuários do sistema</p>
           </div>
-          {tab === "users" && (
-            <button onClick={handleNewUser} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm">
-              <Plus size={15}/> Novo Usuário
-            </button>
-          )}
-        </div>
-
-        <div className="flex border-b border-gray-200">
-          {[
-            {k:"users", l:"Usuários", Icon: Users},
-            {k:"roles", l:"Perfis e Permissões", Icon: Shield},
-          ].map(t => (
-            <button key={t.k} onClick={() => setTab(t.k)}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                tab === t.k ? "border-amber-500 text-amber-600" : "border-transparent text-slate-500 hover:text-slate-700"
-              }`}>
-              <t.Icon size={16}/> {t.l}
-            </button>
-          ))}
+          <button onClick={handleNewUser} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm">
+            <Plus size={15}/> Novo Usuário
+          </button>
         </div>
 
         {loading ? (
           <div className="py-12 text-center text-slate-400 animate-pulse">Carregando dados...</div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            {tab === "users" && (
-              <table className="w-full text-sm">
+            <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b border-gray-200 text-left">
                     <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Usuário</th>
@@ -322,50 +305,6 @@ export const AdminPage = () => {
                   ))}
                 </tbody>
               </table>
-            )}
-
-            {tab === "roles" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-gray-200 text-left">
-                      <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide w-1/4">Perfil (Role)</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Permissões Base</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {roles.map(r => (
-                      <tr key={r.id} className="hover:bg-slate-50 transition-colors group">
-                        <td className="px-4 py-4 font-semibold text-slate-800">
-                          {r.name}
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-1.5">
-                            {r.permissions && r.permissions.length > 0 ? (
-                              r.permissions.map(p => (
-                                <span key={p} className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded font-semibold whitespace-nowrap">
-                                  {PERM_LABELS[p] || p}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs text-slate-400 italic">Nenhuma permissão cadastrada</span>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {!roles.length && (
-                      <tr>
-                        <td colSpan="2" className="py-12 text-center text-slate-400">
-                          <Shield size={32} className="text-slate-200 mx-auto mb-3"/>
-                          Nenhum perfil encontrado.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         )}
       </div>
