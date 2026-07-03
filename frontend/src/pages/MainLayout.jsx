@@ -109,10 +109,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           ))}
           
           <div className="pt-4 mt-4 border-t border-slate-800">
-            <button onClick={() => navigate('/scanner')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${activeNav === 'scanner' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-              <QrCode size={18} className="text-amber-500" /> Scanner
-            </button>
+
 
             <button onClick={() => navigate('/reports')}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 ${activeNav === 'reports' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
