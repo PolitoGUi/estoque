@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Activity, AlertTriangle, Clock, Calendar, ShieldAlert, Star } from 'lucide-react';
+import { Activity, AlertTriangle, Clock, Calendar, ShieldAlert, Star, QrCode } from 'lucide-react';
 import { LOCS, EVT_LABELS } from '../constants';
 import { fmtShort } from '../utils/helpers';
 import { LocBadge } from './MicroComponents';
