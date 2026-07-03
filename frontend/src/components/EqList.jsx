@@ -97,35 +97,36 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
           {selectedEqs.length > 0 && (
-            <div className="flex gap-2 p-1 bg-amber-50 border border-amber-200 rounded-lg animate-in zoom-in-95">
+            <div className="fixed md:relative bottom-[84px] md:bottom-auto left-4 right-4 md:left-auto md:right-auto z-40 flex flex-wrap md:flex-nowrap gap-2 p-3 md:p-1 bg-white md:bg-amber-50 border-2 md:border border-amber-500 md:border-amber-200 rounded-xl md:rounded-lg shadow-2xl md:shadow-none animate-in slide-in-from-bottom-4 md:zoom-in-95 justify-center">
+              <div className="absolute -top-3 md:hidden bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                {selectedEqs.length} selecionados
+              </div>
               <button onClick={() => setShowPrint(true)} disabled={bulkLoading}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white rounded-md text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm">
-                <Printer size={14}/> Imprimir ({selectedEqs.length})
+                className="flex-1 md:flex-none flex justify-center items-center gap-2 px-3 py-2 md:py-1.5 bg-slate-800 text-white rounded-lg md:rounded-md text-xs font-semibold hover:bg-slate-700 transition-colors shadow-sm">
+                <Printer size={14}/> Imprimir <span className="hidden md:inline">({selectedEqs.length})</span>
               </button>
-              <div className="relative flex items-center">
+              <div className="relative flex-1 md:flex-none flex items-center">
                 <MoveRight size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
                 <select value={bulkAction.type === 'move' ? bulkAction.value : ''} onChange={(e) => setBulkAction({ type: 'move', value: e.target.value })} disabled={bulkLoading}
-                  className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
-                  <option value="">Mover Selecionados...</option>
+                  className="w-full pl-7 pr-6 py-2 md:py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg md:rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
+                  <option value="">Mover...</option>
                   {Object.keys(LOCS).map(k => <option key={k} value={k}>{LOCS[k].label}</option>)}
                 </select>
                 <ChevronDown size={13} className="absolute right-2 text-slate-400 pointer-events-none" />
               </div>
-
-              <div className="relative flex items-center">
+              <div className="relative flex-1 md:flex-none flex items-center">
                 <Settings2 size={13} className="absolute left-2 text-slate-500 pointer-events-none" />
                 <select value={bulkAction.type === 'status' ? bulkAction.value : ''} onChange={(e) => setBulkAction({ type: 'status', value: e.target.value })} disabled={bulkLoading}
-                  className="pl-7 pr-6 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
-                  <option value="">Alterar Status...</option>
+                  className="w-full pl-7 pr-6 py-2 md:py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg md:rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer appearance-none">
+                  <option value="">Status...</option>
                   {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
                 </select>
                 <ChevronDown size={13} className="absolute right-2 text-slate-400 pointer-events-none" />
               </div>
-              
               {bulkAction.value && (
                 <button onClick={() => { handleBulkAction(bulkAction.type, bulkAction.value); setBulkAction({ type: null, value: '' }); }}
-                  className="px-3 py-1.5 bg-amber-500 text-white rounded-md text-xs font-bold hover:bg-amber-600 transition-colors animate-in zoom-in flex items-center gap-1 shadow-sm">
-                  <Check size={14}/> Aplicar
+                  className="w-full md:w-auto px-4 py-2 md:py-1.5 bg-amber-500 text-white rounded-lg md:rounded-md text-sm md:text-xs font-bold hover:bg-amber-600 transition-colors animate-in zoom-in flex items-center justify-center gap-1 shadow-sm">
+                  <Check size={16} /> Aplicar
                 </button>
               )}
             </div>

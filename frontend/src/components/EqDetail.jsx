@@ -96,27 +96,29 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs, onDuplicate }) 
           <ChevronLeft size={16}/> Voltar para lista
         </button>
         {!isSucata && (
-          <div className="flex gap-2">
-            <button onClick={() => onObs(e,"defeito")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors shadow-sm">
-              <AlertCircle size={14}/> Reportar Defeito
-            </button>
-            <button onClick={() => onObs(e,"reparo")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors shadow-sm">
-              <Wrench size={14}/> Reportar Reparo
-            </button>
-            <button onClick={() => onObs(e,"observacao")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors shadow-sm">
-              <FileText size={14}/> Observação
-            </button>
+          <div className="fixed md:relative bottom-[84px] md:bottom-auto left-4 right-4 md:left-auto md:right-auto z-40 flex flex-wrap md:flex-nowrap items-center gap-2 bg-white md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none shadow-[0_-8px_30px_rgba(0,0,0,0.12)] md:shadow-none animate-in slide-in-from-bottom-4 md:animate-none">
             <button onClick={() => onMove(e)}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors shadow-sm ml-2">
-              <ArrowRight size={14}/> Movimentar
+              className="w-full md:w-auto flex justify-center items-center gap-1.5 px-4 py-2.5 md:py-1.5 text-sm md:text-xs font-bold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors shadow-sm md:order-last">
+              <ArrowRight size={16} /> <span className="md:hidden">Movimentar Equipamento</span><span className="hidden md:inline">Movimentar</span>
             </button>
-            <button onClick={() => onDuplicate && onDuplicate({ description: e.description, model: e.model, manufacturer: e.manufacturer, category: e.category, notes: e.notes })}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors shadow-sm ml-1">
-              <Copy size={14}/> Duplicar
-            </button>
+            <div className="flex w-full md:w-auto gap-2 overflow-x-auto pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden">
+              <button onClick={() => onObs(e,"defeito")}
+                className="whitespace-nowrap flex-1 flex justify-center items-center gap-1.5 px-3 py-2 md:py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+                <AlertCircle size={14}/> <span className="hidden md:inline">Reportar Defeito</span><span className="md:hidden">Defeito</span>
+              </button>
+              <button onClick={() => onObs(e,"reparo")}
+                className="whitespace-nowrap flex-1 flex justify-center items-center gap-1.5 px-3 py-2 md:py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors">
+                <Wrench size={14}/> <span className="hidden md:inline">Reportar Reparo</span><span className="md:hidden">Reparo</span>
+              </button>
+              <button onClick={() => onObs(e,"observacao")}
+                className="whitespace-nowrap flex-1 flex justify-center items-center gap-1.5 px-3 py-2 md:py-1.5 text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
+                <FileText size={14}/> Obs
+              </button>
+              <button onClick={() => onDuplicate && onDuplicate({ description: e.description, model: e.model, manufacturer: e.manufacturer, category: e.category, notes: e.notes })}
+                className="whitespace-nowrap flex-1 flex justify-center items-center gap-1.5 px-3 py-2 md:py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                <Copy size={14}/> Duplicar
+              </button>
+            </div>
           </div>
         )}
       </div>

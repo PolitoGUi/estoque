@@ -232,12 +232,6 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           <span className="absolute bottom-2 text-[10px] font-bold text-amber-50">Scanner</span>
         </div>
 
-        {hasPermission('reports.export') && (
-          <button onClick={() => navigate('/reports')} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 ${activeNav === 'reports' ? 'text-white scale-105' : 'text-amber-100 hover:text-white'}`}>
-            <FileText size={22} className={activeNav === 'reports' ? 'drop-shadow-md' : ''}/>
-            <span className="text-[10px] font-bold mt-1">Relat.</span>
-          </button>
-        )}
         <button onClick={handleLogout} className={`flex flex-col items-center justify-center w-full h-full transition-transform active:scale-95 text-amber-100 hover:text-white`}>
           <Users size={22} />
           <span className="text-[10px] font-bold mt-1">Sair</span>
