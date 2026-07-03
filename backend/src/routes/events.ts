@@ -49,6 +49,11 @@ router.post('/', requirePermission('equipment.move'), async (req: AuthRequest, r
         throw new Error('Concurrency conflict: The equipment state has changed since you last viewed it.');
       }
 
+      // Blockade: Ensure only FUNCIONAL equipment can go to campo
+      if (destination === 'campo' && eq.status !== 'FUNCIONAL') {
+        throw new Error(`Equipamento bloqueado. Apenas equipamentos com status FUNCIONAL podem ser enviados a campo. (Status atual: ${eq.status})`);
+      }
+
       // Update version to prevent concurrent modifications on the same equipment
       await tx.equipment.update({
         where: { id: equipmentId },

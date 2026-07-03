@@ -42,6 +42,7 @@ router.post('/', requirePermission('equipment.create'), async (req: AuthRequest,
           category: data.category,
           patrimony: data.patrimony || null,
           serial: data.serial || null,
+          status: 'FUNCIONAL',
           qrCodeData: qrJson, // Structured JSON format for QR Code
         }
       });
@@ -107,11 +108,19 @@ router.post('/bulk', requirePermission('equipment.move'), async (req: AuthReques
       req.auditInfo = { action: 'EQUIPMENT_BULK_STATUS', resource: 'MULTIPLE', newData: { ids, status: value } };
     } else if (action === 'move') {
       await prisma.$transaction(async (tx) => {
-        await tx.equipment.updateMany({
+      await tx.equipment.updateMany({
           where: { id: { in: ids } },
           data: { version: { increment: 1 } }
         });
         
+        if (value === 'campo') {
+          const equipmentsToMove = await tx.equipment.findMany({ where: { id: { in: ids } } });
+          const blocked = equipmentsToMove.filter(eq => eq.status !== 'FUNCIONAL');
+          if (blocked.length > 0) {
+            throw new Error(`Existem equipamentos bloqueados na seleção (Status diferente de FUNCIONAL). Não é possível enviar para campo.`);
+          }
+        }
+
         const eventData = ids.map(id => ({
           equipmentId: id,
           type: 'transferencia',

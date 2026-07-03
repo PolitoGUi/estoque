@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Activity, AlertTriangle, Clock, Calendar, ShieldAlert } from 'lucide-react';
+import { Activity, AlertTriangle, Clock, Calendar, ShieldAlert, Star } from 'lucide-react';
 import { LOCS, EVT_LABELS } from '../constants';
 import { fmtShort } from '../utils/helpers';
 import { LocBadge } from './MicroComponents';
@@ -11,9 +11,11 @@ export const Dashboard = ({ eq, onSelect }) => {
     movimentacoesSemana: 0,
     equipamentosOciosos: 0
   });
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     api.get('/dashboard').then(r => setMetrics(r.data)).catch(console.error);
+    api.get('/favorites').then(r => setFavorites(r.data)).catch(console.error);
   }, []);
 
   const counts = useMemo(() => {
@@ -89,7 +91,7 @@ export const Dashboard = ({ eq, onSelect }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[400px] shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2 shrink-0">
             <Activity size={16} className="text-slate-400"/>
@@ -141,6 +143,35 @@ export const Dashboard = ({ eq, onSelect }) => {
               </div>
             ))}
             {!inMaintenance.length && <div className="p-8 text-sm text-slate-400 text-center">Nenhum equipamento em manutenção no momento.</div>}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[400px] shadow-sm">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <Star size={16} className="text-amber-500" />
+              <h3 className="text-sm font-bold text-slate-700">Meus Favoritos</h3>
+            </div>
+          </div>
+          <div className="divide-y divide-gray-50 overflow-y-auto">
+            {favorites.map(fav => {
+              const e = eq.find(x => x.id === fav.equipmentId);
+              if (!e) return null;
+              return (
+                <div key={e.id}
+                  onClick={() => onSelect(e)}
+                  className="flex items-center gap-3 px-5 py-3 hover:bg-amber-50 cursor-pointer transition-colors group">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-amber-600">{e.id}</span>
+                    </div>
+                    <div className="text-sm font-semibold text-slate-800 truncate mt-0.5">{e.description}</div>
+                  </div>
+                  <LocBadge loc={e.currentLocation || 'almoxarifado'} />
+                </div>
+              );
+            })}
+            {!favorites.length && <div className="p-8 text-sm text-slate-400 text-center">Você ainda não possui equipamentos favoritos.</div>}
           </div>
         </div>
       </div>

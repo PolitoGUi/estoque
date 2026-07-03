@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, Wrench } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, Wrench, Bell, Check, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../api';
+import { fmtDate } from '../utils/helpers';
 
 import { useShortcuts } from '../hooks/useShortcuts';
 
@@ -19,6 +21,50 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
   
   const activeNav = view === "detail" ? "list" : view;
   const isAdmin = user?.role === 'Administrador' || user?.role?.name === 'Administrador';
+
+  const [notifs, setNotifs] = useState([]);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      loadNotifs();
+      const t = setInterval(loadNotifs, 30000); // Check every 30s
+      return () => clearInterval(t);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const clickOut = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false);
+    };
+    document.addEventListener('mousedown', clickOut);
+    return () => document.removeEventListener('mousedown', clickOut);
+  }, []);
+
+  const loadNotifs = async () => {
+    try {
+      const res = await api.get('/notifications');
+      setNotifs((res.data || []).filter(n => !n.isRead));
+    } catch (e) {
+      // silent
+    }
+  };
+
+  const markRead = async (id) => {
+    try {
+      await api.post(`/notifications/${id}/read`);
+      setNotifs(n => n.filter(x => x.id !== id));
+    } catch (e) {}
+  };
+
+  const markAllRead = async () => {
+    try {
+      await api.post('/notifications/read-all');
+      setNotifs([]);
+      setShowNotifs(false);
+    } catch (e) {}
+  };
 
   useShortcuts({
     onSearch: () => searchInputRef.current?.focus(),
@@ -125,8 +171,41 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
               className="w-full pl-10 pr-4 py-2 bg-slate-800 text-white md:bg-slate-100 md:text-slate-900 border-transparent rounded-lg text-sm focus:bg-slate-700 md:focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none placeholder:text-slate-500"
             />
           </form>
-          <div className="hidden md:flex items-center gap-4 text-sm font-semibold text-slate-600 ml-4">
-            {/* Any extra header icons can go here */}
+          <div className="flex items-center gap-4 text-sm font-semibold text-slate-600 ml-4 relative" ref={notifRef}>
+            <button onClick={() => setShowNotifs(!showNotifs)} className="relative p-2 text-slate-400 hover:text-amber-500 hover:bg-slate-50 rounded-full transition-colors">
+              <Bell size={20} />
+              {notifs.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
+              )}
+            </button>
+            
+            {showNotifs && (
+              <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in slide-in-from-top-2">
+                <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                  <h4 className="font-bold text-slate-700">Notificações</h4>
+                  {notifs.length > 0 && (
+                    <button onClick={markAllRead} className="text-[11px] font-bold text-slate-400 hover:text-emerald-500 uppercase tracking-wider">Ler Tudo</button>
+                  )}
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {notifs.length === 0 ? (
+                    <div className="p-6 text-center text-slate-400 text-sm">Nenhuma notificação nova.</div>
+                  ) : (
+                    notifs.map(n => (
+                      <div key={n.id} className="p-3 border-b border-gray-50 hover:bg-slate-50 transition-colors flex gap-3 items-start group">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-700 font-medium leading-snug">{n.message}</p>
+                          <span className="text-[10px] text-slate-400 mt-1 block">{fmtDate(n.createdAt)}</span>
+                        </div>
+                        <button onClick={() => markRead(n.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-emerald-500 transition-opacity">
+                          <Check size={14} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
         <div className="flex-1 overflow-y-auto">

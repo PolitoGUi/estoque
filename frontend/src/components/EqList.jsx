@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity } from 'lucide-react';
-import { LOCS } from '../constants';
-import { LocBadge } from './MicroComponents';
+import { LOCS, EQ_STATUS } from '../constants';
+import { LocBadge, StatusBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
 import { PrintQRGrid } from './PrintQRGrid';
 import api from '../api';
@@ -104,7 +104,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
               <select onChange={(e) => { if(e.target.value) { handleBulkAction('status', e.target.value); e.target.value = ''; } }} disabled={bulkLoading}
                 className="px-2 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
                 <option value="">⚙️ Alterar Status...</option>
-                {["Disponível", "Reservado", "Em uso", "Em manutenção", "Aguardando peça", "Sucateado"].map(s => <option key={s} value={s}>{s}</option>)}
+                {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
               </select>
             </div>
           )}
@@ -146,7 +146,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
           <select value={statusF} onChange={e => { setStatusF(e.target.value); setPage(1); }}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
             <option value="all">Todos os Status</option>
-            {["Disponível", "Reservado", "Em uso", "Em manutenção", "Aguardando peça", "Sucateado"].map(c => <option key={c} value={c}>{c}</option>)}
+            {Object.entries(EQ_STATUS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
           </select>
         </div>
       )}
@@ -184,12 +184,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                   <div className="text-[11px] font-mono text-slate-400">Pat: {e.patrimony || "S/N"}</div>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <LocBadge loc={l} />
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      e.status === 'Disponível' ? 'bg-emerald-100 text-emerald-700' :
-                      e.status === 'Em manutenção' ? 'bg-red-100 text-red-700' :
-                      e.status === 'Sucateado' ? 'bg-gray-100 text-gray-700' :
-                      e.status === 'Em uso' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
-                    }`}>{e.status || 'Disponível'}</span>
+                    <StatusBadge status={e.status || 'FUNCIONAL'} />
                   </div>
                 </div>
               </div>
@@ -237,15 +232,7 @@ export const EqList = ({ eq, onSelect, onNew, userRole }) => {
                     <td className="px-4 py-3 text-xs font-medium text-slate-600">{e.category}</td>
                     <td className="px-4 py-3"><LocBadge loc={l}/></td>
                     <td className="px-4 py-3 text-xs font-semibold">
-                      <span className={`px-2 py-1 rounded-md ${
-                        e.status === 'Disponível' ? 'bg-emerald-100 text-emerald-700' :
-                        e.status === 'Em manutenção' ? 'bg-red-100 text-red-700' :
-                        e.status === 'Sucateado' ? 'bg-gray-100 text-gray-700' :
-                        e.status === 'Em uso' ? 'bg-blue-100 text-blue-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
-                        {e.status || 'Disponível'}
-                      </span>
+                      <StatusBadge status={e.status || 'FUNCIONAL'} />
                     </td>
                     <td className="px-4 py-3 text-right">
                       <ChevronRight size={16} className="text-gray-300 group-hover:text-amber-500 transition-colors ml-auto"/>

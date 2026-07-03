@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X } from 'lucide-react';
+import { ChevronLeft, AlertCircle, FileText, ArrowRight, QrCode, Download, Activity, FileJson, Hash, Settings2, Edit2, Check, X, Star } from 'lucide-react';
 import api from '../api';
-import { LOCS, OBS_CATS } from '../constants';
+import { LOCS, OBS_CATS, EQ_HEALTH } from '../constants';
 import { fmtDate } from '../utils/helpers';
-import { LocBadge, CatBadge, Av } from './MicroComponents';
+import { LocBadge, CatBadge, Av, StatusBadge } from './MicroComponents';
 import { QRCodeModal } from './Modals';
 import { Timeline } from './Timeline';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -14,17 +14,22 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
   const [eEvts, setEEvts] = useState([]);
   const [eObs, setEObs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [evtsRes, obsRes] = await Promise.all([
+        const [evtsRes, obsRes, favRes] = await Promise.all([
           api.get(`/events/${e.id}`),
-          api.get(`/observations/${e.id}`)
+          api.get(`/observations/${e.id}`),
+          api.get(`/favorites`)
         ]);
         setEEvts(evtsRes.data);
         setEObs(obsRes.data);
+        if (favRes.data.some(f => f.equipmentId === e.id)) {
+          setIsFav(true);
+        }
       } catch (err) {
         console.error("Erro ao carregar detalhes", err);
       } finally {
@@ -45,6 +50,16 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
       setEditField(null);
     } catch (err) {
       toast.error("Erro ao salvar.");
+    }
+  };
+
+  const toggleFav = async () => {
+    try {
+      const res = await api.post('/favorites/toggle', { equipmentId: e.id });
+      setIsFav(res.data.favorited);
+      toast.success(res.data.favorited ? "Adicionado aos favoritos" : "Removido dos favoritos");
+    } catch (err) {
+      toast.error("Erro ao favoritar");
     }
   };
 
@@ -78,6 +93,13 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
   }
 
   const qrData = e.qrCodeData || JSON.stringify({ id: e.id, v: 1 });
+  
+  const defectCount = eObs.filter(o => o.category === 'defeito').length;
+  let healthKey = 'SAUDAVEL';
+  if (defectCount >= 2 && defectCount <= 3) healthKey = 'ATENCAO';
+  else if (defectCount >= 4 && defectCount <= 5) healthKey = 'ALTO_DESGASTE';
+  else if (defectCount >= 6) healthKey = 'CRITICO';
+  const H = EQ_HEALTH[healthKey];
 
   return (
     <div className="p-6 space-y-6">
@@ -111,11 +133,28 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs }) => {
             <div className="h-2 w-full" style={{background: L.color}}/>
             <div className="p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-mono font-bold text-2xl text-amber-600 tracking-tight">{e.id}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-2xl text-amber-600 tracking-tight">{e.id}</span>
+                  <button onClick={toggleFav} className={`p-1.5 rounded-full transition-colors ${isFav ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-300 hover:text-amber-400 hover:bg-amber-50'}`}>
+                    <Star size={20} fill={isFav ? "currentColor" : "none"} />
+                  </button>
+                </div>
                 <LocBadge loc={loc}/>
               </div>
               <h1 className="text-xl font-bold text-slate-800 leading-tight">{e.description}</h1>
               <p className="text-sm text-slate-500 mt-1 font-medium">{e.category}</p>
+              
+              <div className="flex flex-wrap gap-2 mt-4">
+                <StatusBadge status={e.status || 'FUNCIONAL'} />
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${H.color}`}>
+                  {H.label}
+                </span>
+                {e.status !== 'FUNCIONAL' && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
+                    Bloqueado para Campo
+                  </span>
+                )}
+              </div>
               
               {isSucata && (
                 <div className="mt-3 text-xs text-red-600 font-bold bg-red-50 p-2 rounded-lg border border-red-100 text-center uppercase tracking-wider">

@@ -20,3 +20,19 @@ export const EVT_LABELS = {
   defeito: "Defeito", teste: "Teste", reparo: "Reparo",
   sucata: "Descartado (sucata)", observacao: "Observação",
 };
+
+export const EQ_STATUS = {
+  'FUNCIONAL':     { label: 'Funcional',     color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  'COM_DEFEITO':   { label: 'Com Defeito',   color: 'text-red-500',     bg: 'bg-red-50',     border: 'border-red-200' },
+  'EM_MANUTENCAO': { label: 'Em Manutenção', color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-200' },
+  'EM_TESTE':      { label: 'Em Teste',      color: 'text-amber-500',   bg: 'bg-amber-50',   border: 'border-amber-200' },
+  'INDISPONIVEL':  { label: 'Indisponível',  color: 'text-slate-500',   bg: 'bg-slate-50',   border: 'border-slate-200' },
+  'SUCATA':        { label: 'Sucata',        color: 'text-gray-900',    bg: 'bg-gray-200',   border: 'border-gray-300' }
+};
+
+export const EQ_HEALTH = {
+  'SAUDAVEL':      { label: 'Saudável',      color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+  'ATENCAO':       { label: 'Atenção',       color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
+  'ALTO_DESGASTE': { label: 'Alto Desgaste', color: 'text-orange-600 bg-orange-50 border-orange-200' },
+  'CRITICO':       { label: 'Crítico',       color: 'text-red-600 bg-red-50 border-red-200' }
+};

@@ -80,6 +80,45 @@ router.put('/:id', async (req: AuthRequest, res) => {
   res.json(issue);
 });
 
+// Update issue status specifically
+router.put('/:id/status', async (req: AuthRequest, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const existing = await prisma.issue.findUnique({ where: { id } });
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+
+  const issue = await prisma.issue.update({
+    where: { id },
+    data: { status }
+  });
+
+  // Automação: Atualizar status do equipamento
+  if (status === 'IN_PROGRESS') {
+    await prisma.equipment.update({
+      where: { id: existing.equipmentId },
+      data: { status: 'EM_MANUTENCAO' }
+    });
+  } else if (status === 'RESOLVED') {
+    await prisma.equipment.update({
+      where: { id: existing.equipmentId },
+      data: { status: 'FUNCIONAL' }
+    });
+    
+    // Notify the user who created the issue
+    if (existing.createdById !== req.user!.id) {
+      await prisma.notification.create({
+        data: {
+          userId: existing.createdById,
+          message: `Sua pendência "${existing.title}" foi resolvida e o equipamento está Funcional.`
+        }
+      });
+    }
+  }
+
+  res.json(issue);
+});
+
 // Delete an issue
 router.delete('/:id', async (req: AuthRequest, res) => {
   const { id } = req.params;
