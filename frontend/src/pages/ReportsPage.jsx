@@ -74,6 +74,8 @@ export const ReportsPage = () => {
         }
         return true;
       });
+    }
+    
     // Filter by Location
     if (locationFilter !== 'all') {
       result = result.filter(row => {
