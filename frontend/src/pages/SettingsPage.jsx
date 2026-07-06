@@ -50,7 +50,7 @@ export const SettingsPage = () => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `backup_${new Date().toISOString().slice(0,10)}.sql`);
+      link.setAttribute('download', `backup_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -133,14 +133,14 @@ export const SettingsPage = () => {
       <button onClick={saveSystemSettings} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 shadow-sm transition-colors">Salvar Alterações</button>
 
       <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2 mt-8 pt-4">Backup e Restauração</h3>
-      <div className="flex gap-4">
+      <div className="mt-6 flex flex-wrap gap-4">
         <button onClick={handleBackupExport} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700">
-          <Download size={16} /> Exportar Backup (SQL)
+          <Download size={16} /> Exportar Backup (JSON)
         </button>
-        <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-200">
-          <Upload size={16} /> Importar e Sobrescrever
+        <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
+          <Upload size={16} /> Restaurar Backup (JSON)
         </button>
-        <input type="file" className="hidden" ref={fileInputRef} onChange={handleBackupImport} accept=".sql" />
+        <input type="file" className="hidden" ref={fileInputRef} onChange={handleBackupImport} accept=".json" />
       </div>
 
       <h3 className="text-lg font-bold text-slate-800 border-b border-gray-200 pb-2 mt-8 pt-4">Ambiente de Testes</h3>

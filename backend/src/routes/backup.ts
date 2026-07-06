@@ -1,38 +1,10 @@
 import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
-import { exec, execFile } from 'child_process';
+import prisma from '../models/prismaClient';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import multer from 'multer';
-
-const findPgDump = () => {
-  const paths = [
-    '/usr/bin/pg_dump',
-    '/usr/lib/postgresql/16/bin/pg_dump',
-    '/usr/lib/postgresql/15/bin/pg_dump',
-    '/usr/lib/postgresql/14/bin/pg_dump',
-    '/usr/local/bin/pg_dump'
-  ];
-  for (const p of paths) {
-    if (fs.existsSync(p)) return p;
-  }
-  return 'pg_dump';
-};
-
-const findPgRestore = () => {
-  const paths = [
-    '/usr/bin/pg_restore',
-    '/usr/lib/postgresql/16/bin/pg_restore',
-    '/usr/lib/postgresql/15/bin/pg_restore',
-    '/usr/lib/postgresql/14/bin/pg_restore',
-    '/usr/local/bin/pg_restore'
-  ];
-  for (const p of paths) {
-    if (fs.existsSync(p)) return p;
-  }
-  return 'pg_restore';
-};
 
 const router = Router();
 router.use(authenticate);
@@ -45,22 +17,30 @@ if (!fs.existsSync(backupDir)) {
 
 const upload = multer({ dest: backupDir });
 
-router.get('/export', (req: AuthRequest, res) => {
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) return res.status(500).json({ error: 'DATABASE_URL not set' });
+const MODELS = [
+  'Role', 'Permission', 'RolePermission', 'User', 'UserPermission',
+  'SystemSetting', 'Category', 'Manufacturer', 'EquipmentModel',
+  'Location', 'Equipment', 'Event', 'Observation', 'AuditLog',
+  'Favorite', 'Issue', 'Notification'
+];
 
-  const filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.sql`;
-  const filepath = path.join(os.tmpdir(), filename);
-
-  const args = [dbUrl, '-F', 'c', '-f', filepath];
-  const pgDumpPath = findPgDump();
-
-  execFile(pgDumpPath, args, (error, stdout, stderr) => {
-    if (error) {
-      console.error('pg_dump error:', error, stderr);
-      return res.status(500).json({ error: `Failed to generate backup: ${stderr || error.message}` });
-    }
+router.get('/export', async (req: AuthRequest, res) => {
+  try {
+    const backupData: Record<string, any[]> = {};
     
+    // Fetch all data dynamically via Prisma
+    for (const model of MODELS) {
+      const delegate = (prisma as any)[model.charAt(0).toLowerCase() + model.slice(1)];
+      if (delegate && delegate.findMany) {
+        backupData[model] = await delegate.findMany();
+      }
+    }
+
+    const filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    const filepath = path.join(os.tmpdir(), filename);
+    
+    fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
+
     // @ts-ignore
     req.auditInfo = { action: 'BACKUP_EXPORT', resource: 'DATABASE' };
     
@@ -68,34 +48,53 @@ router.get('/export', (req: AuthRequest, res) => {
       if (err) console.error('Download error:', err);
       fs.unlink(filepath, () => {}); // Clean up after download
     });
-  });
+  } catch (error: any) {
+    console.error('JSON backup export error:', error);
+    res.status(500).json({ error: `Failed to generate JSON backup: ${error.message}` });
+  }
 });
 
-router.post('/import', upload.single('backup'), (req: AuthRequest, res) => {
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) return res.status(500).json({ error: 'DATABASE_URL not set' });
+router.post('/import', upload.single('backup'), async (req: AuthRequest, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
   const filepath = req.file.path;
   
-  // Use pg_restore with clean option to drop/recreate objects before restoring
-  const args = ['--clean', '--if-exists', '--no-owner', '--no-privileges', '-d', dbUrl, filepath];
-  const pgRestorePath = findPgRestore();
+  try {
+    const fileContent = fs.readFileSync(filepath, 'utf-8');
+    const backupData = JSON.parse(fileContent);
+    
+    // Perform import in a transaction to ensure integrity
+    await prisma.$transaction(async (tx: any) => {
+      // 1. Delete all existing data (in reverse order to respect foreign keys)
+      const reverseModels = [...MODELS].reverse();
+      for (const model of reverseModels) {
+        const delegate = tx[model.charAt(0).toLowerCase() + model.slice(1)];
+        if (delegate && delegate.deleteMany) {
+          await delegate.deleteMany({});
+        }
+      }
+      
+      // 2. Insert new data
+      for (const model of MODELS) {
+        const data = backupData[model];
+        if (data && data.length > 0) {
+          const delegate = tx[model.charAt(0).toLowerCase() + model.slice(1)];
+          if (delegate && delegate.createMany) {
+            await delegate.createMany({ data });
+          }
+        }
+      }
+    });
 
-  execFile(pgRestorePath, args, (error, stdout, stderr) => {
     fs.unlink(filepath, () => {}); // Clean up uploaded file
-
-    if (error) {
-      console.error('pg_restore error:', error, stderr);
-      // pg_restore might return non-zero exit code for minor warnings.
-      // But we will treat actual errors as 500 for safety, or log them.
-      // return res.status(500).json({ error: 'Failed to restore backup. See logs.' });
-    }
 
     // @ts-ignore
     req.auditInfo = { action: 'BACKUP_IMPORT', resource: 'DATABASE' };
-    res.json({ success: true, message: 'Backup restored successfully' });
-  });
+    res.json({ success: true, message: 'Backup JSON restored successfully' });
+  } catch (error: any) {
+    fs.unlink(filepath, () => {});
+    console.error('JSON backup restore error:', error);
+    res.status(500).json({ error: `Failed to restore JSON backup: ${error.message}` });
+  }
 });
 
 export default router;
