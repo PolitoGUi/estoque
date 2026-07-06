@@ -172,6 +172,99 @@ router.post('/bulk', requirePermission('equipment.move'), async (req: AuthReques
   }
 });
 
+router.post('/bulk-import', requirePermission('equipment.create'), async (req: AuthRequest, res) => {
+  const { equipments } = req.body;
+  
+  if (!Array.isArray(equipments) || equipments.length === 0) {
+    return res.status(400).json({ error: "Nenhum equipamento fornecido." });
+  }
+
+  try {
+    // 1. Fetch Dictionaries for Validation (Case Insensitive)
+    const [categories, manufacturers, models] = await Promise.all([
+      prisma.category.findMany(),
+      prisma.manufacturer.findMany(),
+      prisma.equipmentModel.findMany()
+    ]);
+
+    const catNames = new Set(categories.map(c => c.name.toUpperCase()));
+    const manNames = new Set(manufacturers.map(m => m.name.toUpperCase()));
+    const modNames = new Set(models.map(m => m.name.toUpperCase()));
+
+    const missingCats = new Set<string>();
+    const missingMans = new Set<string>();
+    const missingMods = new Set<string>();
+
+    // 2. Validate
+    for (const eq of equipments) {
+      const c = eq.category?.trim().toUpperCase();
+      const m = eq.manufacturer?.trim().toUpperCase();
+      const mo = eq.model?.trim().toUpperCase();
+
+      if (c && !catNames.has(c)) missingCats.add(c);
+      if (m && !manNames.has(m)) missingMans.add(m);
+      if (mo && !modNames.has(mo)) missingMods.add(mo);
+    }
+
+    if (missingCats.size > 0 || missingMans.size > 0 || missingMods.size > 0) {
+      return res.status(400).json({
+        error: "Validação falhou. Existem itens na planilha que não estão cadastrados nos Dicionários.",
+        missing: {
+          categories: Array.from(missingCats),
+          manufacturers: Array.from(missingMans),
+          models: Array.from(missingMods)
+        }
+      });
+    }
+
+    // 3. Insert in Bulk
+    await prisma.$transaction(async (tx) => {
+      for (const data of equipments) {
+        const id = data.id?.trim().toUpperCase();
+        // Check if exists to avoid crash
+        const existing = await tx.equipment.findUnique({ where: { id } });
+        if (existing) continue; // Skip existing
+
+        const qrJson = JSON.stringify({ id, v: 1 });
+        const eq = await tx.equipment.create({
+          data: {
+            id,
+            description: data.description?.trim().toUpperCase() || '',
+            manufacturer: data.manufacturer?.trim().toUpperCase() || '',
+            model: data.model?.trim().toUpperCase() || '',
+            category: data.category?.trim().toUpperCase() || '',
+            patrimony: data.patrimony ? data.patrimony.trim().toUpperCase() : null,
+            serial: data.serial ? data.serial.trim().toUpperCase() : null,
+            status: data.status || 'Disponível',
+            qrCodeData: qrJson,
+          }
+        });
+
+        await tx.event.create({
+          data: {
+            equipmentId: eq.id,
+            type: 'cadastro',
+            destination: 'almoxarifado',
+            userId: Number(req.user!.id),
+            notes: 'Importação via Excel'
+          }
+        });
+      }
+    }, {
+      maxWait: 10000,
+      timeout: 30000
+    });
+
+    req.auditInfo = { action: 'EQUIPMENT_BULK_IMPORT', resource: 'MULTIPLE', newData: { count: equipments.length } };
+    broadcastUpdate('refresh');
+    res.json({ success: true });
+
+  } catch (err: any) {
+    console.error("Bulk import erro:", err);
+    res.status(500).json({ error: "Erro interno durante importação." });
+  }
+});
+
 export default router;
 
 

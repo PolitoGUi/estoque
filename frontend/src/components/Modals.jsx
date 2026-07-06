@@ -225,9 +225,20 @@ export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
     notes: initialData.notes || ""
   });
   const [loading, setLoading] = useState(false);
+  const [taxData, setTaxData] = useState({ categories: [], manufacturers: [], models: [] });
+  
   const set   = (k, v) => setF(p => ({...p, [k]: v}));
   const valid = f.description && f.model && f.manufacturer;
-  const CATS  = ["CLP","Módulo I/O","Fonte","Sensor","Drive","Relé","IHM","Outros"];
+
+  useEffect(() => {
+    api.get('/settings/taxonomy').then(res => {
+      setTaxData(res.data);
+    }).catch(console.error);
+  }, []);
+
+  const CATS = taxData.categories.length > 0 ? taxData.categories.map(c => c.name) : ["CLP","Módulo I/O","Fonte","Sensor","Drive","Relé","IHM","Outros"];
+  const MANS = Array.from(new Set([...taxData.manufacturers.map(m => m.name), ...eqList.map(e => e.manufacturer).filter(Boolean)]));
+  const MODS = Array.from(new Set([...taxData.models.map(m => m.name), ...eqList.map(e => e.model).filter(Boolean)]));
 
   const save = async () => {
     if (!valid) return;
@@ -243,8 +254,6 @@ export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
       setLoading(false);
     }
   };
-
-  const knownModels = Array.from(new Set(eqList.map(e => e.model).filter(Boolean)));
 
   const handleModelBlur = () => {
     if (!f.model) return;
@@ -280,13 +289,17 @@ export const NewEqModal = ({ eqList, onSave, onClose, initialData = {} }) => {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Fabricante *</label>
-            <input className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-              placeholder="Siemens" value={f.manufacturer} onChange={ev => set("manufacturer", ev.target.value)}/>
+            <ComboBox 
+              options={MANS}
+              placeholder="Siemens" 
+              value={f.manufacturer} 
+              onChange={val => set("manufacturer", val)}
+            />
           </div>
           <div>
             <label className="text-xs text-slate-400 uppercase font-semibold tracking-wide">Modelo *</label>
             <ComboBox 
-              options={knownModels}
+              options={MODS}
               placeholder="CPU 315-2 DP"
               value={f.model}
               onChange={val => set("model", val)}

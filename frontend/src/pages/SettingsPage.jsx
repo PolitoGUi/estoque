@@ -256,6 +256,7 @@ export const SettingsPage = () => {
           <div className="w-64 shrink-0 bg-white border border-gray-200 rounded-xl p-2 space-y-1 h-fit">
             {[
               { k: 'system', l: 'Sistema & Backup', Icon: Settings },
+              { k: 'categories', l: 'Categorias', Icon: Layers },
               { k: 'manufacturers', l: 'Fabricantes', Icon: Folder },
               { k: 'models', l: 'Modelos', Icon: Database },
               { k: 'locations', l: 'Locais', Icon: MapPin },
@@ -274,6 +275,16 @@ export const SettingsPage = () => {
             ) : (
               <>
                 {activeTab === 'system' && renderSystemTab()}
+
+                {activeTab === 'categories' && (
+                  <div>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold">Categorias</h3>
+                      <button onClick={() => setTaxonomyModal({ open: true, type: 'category', title: 'Nova Categoria' })} className="flex items-center gap-1 text-sm bg-amber-500 text-white px-3 py-1.5 rounded hover:bg-amber-600 transition-colors"><Plus size={16}/>Nova</button>
+                    </div>
+                    {renderTable(data.categories, [{k: 'name', l: 'Nome'}], 'category')}
+                  </div>
+                )}
 
                 {activeTab === 'manufacturers' && (
                   <div>

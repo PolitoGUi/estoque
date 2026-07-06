@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity, MoveRight, Settings2, ChevronDown, Check } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, Plus, ChevronRight, Package, Filter, ChevronLeft, SlidersHorizontal, Printer, MapPin, Activity, MoveRight, Settings2, ChevronDown, Check, Download, Upload } from 'lucide-react';
 import { LOCS, EQ_STATUS } from '../constants';
 import { LocBadge, StatusBadge } from './MicroComponents';
 import { useSearchParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { PrintQRGrid } from './PrintQRGrid';
 import { ConfirmDialog } from './Modals';
 import api from '../api';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
   const [searchParams] = useSearchParams();
@@ -27,6 +28,8 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkAction, setBulkAction] = useState({ type: null, value: '' });
   const [confirmBulk, setConfirmBulk] = useState(null);
+  
+  const fileInputRef = useRef(null);
 
   const executeBulkAction = async (action, value) => {
     setBulkLoading(true);
@@ -44,6 +47,96 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
 
   const handleBulkAction = (action, value) => {
     setConfirmBulk({ action, value });
+  };
+
+  const handleExport = () => {
+    const data = filtered.map(e => ({
+      ID: e.id,
+      Descrição: e.description,
+      Fabricante: e.manufacturer,
+      Modelo: e.model,
+      Categoria: e.category,
+      Patrimônio: e.patrimony || "",
+      Série: e.serial || "",
+      Status: e.status || "Disponível",
+      Localização: e.currentLocation || "almoxarifado"
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Equipamentos");
+    XLSX.writeFile(wb, "Equipamentos.xlsx");
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        let currentMaxId = eq.length > 0 ? Math.max(0, ...eq.map(e => parseInt(String(e.id).replace("AT-",""))).filter(n => !isNaN(n))) : 0;
+        
+        const equipments = [];
+        data.forEach(row => {
+          const desc = String(row['Descrição'] || row.Descricao || row.Description || "").trim();
+          if (!desc) return; // Ignora linhas sem descrição (vazias)
+          
+          let qty = parseInt(row.Quantidade || row.Qty || row.Qtd || 1);
+          if (isNaN(qty) || qty < 1) qty = 1;
+
+          for (let i = 0; i < qty; i++) {
+            let rowId = String(row.ID || "").trim();
+            if (!rowId || qty > 1) {
+              currentMaxId++;
+              rowId = `AT-${String(currentMaxId).padStart(6, "0")}`;
+            }
+
+            equipments.push({
+              id: rowId,
+              description: desc,
+              manufacturer: String(row.Fabricante || row.Marca || row.Manufacturer || "").trim(),
+              model: String(row.Modelo || row.Model || "").trim(),
+              category: String(row.Categoria || row.Category || "").trim(),
+              patrimony: String(row['Patrimônio'] || row.Patrimony || "").trim(),
+              serial: String(row['Nº_de_Serie'] || row['Série'] || row.Serial || "").trim(),
+              status: String(row.Status || "").trim()
+            });
+          }
+        });
+
+        if (equipments.length === 0) {
+          toast.error("Nenhum dado válido encontrado na planilha.");
+          return;
+        }
+
+        toast.loading(`Importando ${equipments.length} itens...`, { id: 'import' });
+        await api.post('/equipments/bulk-import', { equipments });
+        toast.success("Importação concluída com sucesso!", { id: 'import' });
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (error) {
+        if (error.response?.data?.missing) {
+          const m = error.response.data.missing;
+          toast.error(
+            <div>
+              <b>Validação Falhou! Dicionário Incompleto:</b><br/>
+              {m.categories?.length > 0 && <div>Cat: {m.categories.join(', ')}</div>}
+              {m.manufacturers?.length > 0 && <div>Fab: {m.manufacturers.join(', ')}</div>}
+              {m.models?.length > 0 && <div>Mod: {m.models.join(', ')}</div>}
+            </div>,
+            { id: 'import', duration: 10000 }
+          );
+        } else {
+          toast.error("Erro na importação: " + (error.response?.data?.error || error.message), { id: 'import' });
+        }
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = '';
   };
 
   useEffect(() => {
@@ -131,6 +224,21 @@ export const EqList = ({ eq, onSelect, onNew, canCreate }) => {
               )}
             </div>
           )}
+          
+          <div className="flex gap-1 border-r border-gray-200 pr-2 mr-1">
+            <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
+              <Download size={15}/> Exportar
+            </button>
+            {canCreate && (
+              <>
+                <input type="file" className="hidden" ref={fileInputRef} onChange={handleImport} accept=".xlsx,.xls,.csv" />
+                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
+                  <Upload size={15}/> Importar
+                </button>
+              </>
+            )}
+          </div>
+
           <button onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border ${showFilters ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'}`}>
             <SlidersHorizontal size={15}/> Filtros
