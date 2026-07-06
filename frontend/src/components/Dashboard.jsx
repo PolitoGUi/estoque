@@ -4,6 +4,7 @@ import { LOCS, EVT_LABELS } from '../constants';
 import { fmtShort } from '../utils/helpers';
 import { LocBadge } from './MicroComponents';
 import api from '../api';
+import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = ({ eq, onSelect }) => {
@@ -11,7 +12,9 @@ export const Dashboard = ({ eq, onSelect }) => {
   const [metrics, setMetrics] = useState({
     movimentacoesHoje: 0,
     movimentacoesSemana: 0,
-    equipamentosOciosos: 0
+    equipamentosOciosos: 0,
+    locDistribution: [],
+    catDistribution: []
   });
   const [favorites, setFavorites] = useState([]);
 
@@ -159,6 +162,60 @@ export const Dashboard = ({ eq, onSelect }) => {
               </div>
             ))}
             {!inMaintenance.length && <div className="p-8 text-sm text-slate-400 text-center">Nenhum equipamento em manutenção no momento.</div>}
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 hidden md:grid">
+        {/* Gráfico de Pizza (Localização) */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-700 mb-4 text-center">Distribuição por Localização</h3>
+          <div className="h-[250px] w-full">
+            {metrics.locDistribution?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie 
+                    data={metrics.locDistribution} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={60} 
+                    outerRadius={90}
+                    label
+                  >
+                    {metrics.locDistribution.map((entry, index) => {
+                      const color = Object.values(LOCS).find(l => l.label === entry.name)?.color || '#94a3b8';
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm">Sem dados</div>
+            )}
+          </div>
+        </div>
+
+        {/* Gráfico de Barras (Categorias) */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-700 mb-4 text-center">Equipamentos por Categoria</h3>
+          <div className="h-[250px] w-full">
+            {metrics.catDistribution?.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={metrics.catDistribution}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip cursor={{ fill: '#f1f5f9' }} />
+                  <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Qtd" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm">Sem dados</div>
+            )}
           </div>
         </div>
       </div>
