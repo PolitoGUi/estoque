@@ -141,11 +141,6 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
                 </button>
               </>
             )}
-
-            <button onClick={() => setShowPwaModal(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 text-slate-400 hover:text-white hover:bg-slate-800">
-              <Download size={18} className="text-pink-500" /> Instalar App
-            </button>
           </div>
         </nav>
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
