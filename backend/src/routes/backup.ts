@@ -6,6 +6,34 @@ import fs from 'fs';
 import os from 'os';
 import multer from 'multer';
 
+const findPgDump = () => {
+  const paths = [
+    '/usr/bin/pg_dump',
+    '/usr/lib/postgresql/16/bin/pg_dump',
+    '/usr/lib/postgresql/15/bin/pg_dump',
+    '/usr/lib/postgresql/14/bin/pg_dump',
+    '/usr/local/bin/pg_dump'
+  ];
+  for (const p of paths) {
+    if (fs.existsSync(p)) return p;
+  }
+  return 'pg_dump';
+};
+
+const findPgRestore = () => {
+  const paths = [
+    '/usr/bin/pg_restore',
+    '/usr/lib/postgresql/16/bin/pg_restore',
+    '/usr/lib/postgresql/15/bin/pg_restore',
+    '/usr/lib/postgresql/14/bin/pg_restore',
+    '/usr/local/bin/pg_restore'
+  ];
+  for (const p of paths) {
+    if (fs.existsSync(p)) return p;
+  }
+  return 'pg_restore';
+};
+
 const router = Router();
 router.use(authenticate);
 router.use(requirePermission('settings.manage'));
@@ -25,8 +53,9 @@ router.get('/export', (req: AuthRequest, res) => {
   const filepath = path.join(os.tmpdir(), filename);
 
   const args = [dbUrl, '-F', 'c', '-f', filepath];
+  const pgDumpPath = findPgDump();
 
-  execFile('pg_dump', args, (error, stdout, stderr) => {
+  execFile(pgDumpPath, args, (error, stdout, stderr) => {
     if (error) {
       console.error('pg_dump error:', error, stderr);
       return res.status(500).json({ error: `Failed to generate backup: ${stderr || error.message}` });
@@ -51,8 +80,9 @@ router.post('/import', upload.single('backup'), (req: AuthRequest, res) => {
   
   // Use pg_restore with clean option to drop/recreate objects before restoring
   const args = ['--clean', '--if-exists', '--no-owner', '--no-privileges', '-d', dbUrl, filepath];
+  const pgRestorePath = findPgRestore();
 
-  execFile('pg_restore', args, (error, stdout, stderr) => {
+  execFile(pgRestorePath, args, (error, stdout, stderr) => {
     fs.unlink(filepath, () => {}); // Clean up uploaded file
 
     if (error) {
