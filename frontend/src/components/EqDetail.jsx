@@ -139,15 +139,10 @@ export const EqDetail = ({ e, refreshKey, onBack, onMove, onObs, onDuplicate }) 
               <p className="text-sm text-slate-500 mt-1 font-medium">{e.category}</p>
               
               <div className="flex flex-wrap gap-2 mt-4">
-                <StatusBadge status={e.status || 'FUNCIONAL'} />
+                <StatusBadge status={e.status || 'Disponível'} />
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${H.color}`}>
                   {H.label}
                 </span>
-                {e.status !== 'FUNCIONAL' && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
-                    Bloqueado para Campo
-                  </span>
-                )}
               </div>
               
               {isSucata && (

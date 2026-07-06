@@ -22,11 +22,17 @@ export const EVT_LABELS = {
 
 export const EQ_STATUS = {
   'FUNCIONAL':     { label: 'Funcional',     color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  'Disponível':    { label: 'Disponível',    color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  'Em uso':        { label: 'Em Uso',        color: 'text-blue-500',    bg: 'bg-blue-50',    border: 'border-blue-200' },
+  'Reservado':     { label: 'Reservado',     color: 'text-purple-500',  bg: 'bg-purple-50',  border: 'border-purple-200' },
   'COM_DEFEITO':   { label: 'Com Defeito',   color: 'text-red-500',     bg: 'bg-red-50',     border: 'border-red-200' },
   'EM_MANUTENCAO': { label: 'Em Manutenção', color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-200' },
+  'Em manutenção': { label: 'Em Manutenção', color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-200' },
   'EM_TESTE':      { label: 'Em Teste',      color: 'text-amber-500',   bg: 'bg-amber-50',   border: 'border-amber-200' },
+  'Aguardando peça':{ label: 'Aguard. Peça', color: 'text-amber-500',   bg: 'bg-amber-50',   border: 'border-amber-200' },
   'INDISPONIVEL':  { label: 'Indisponível',  color: 'text-slate-500',   bg: 'bg-slate-50',   border: 'border-slate-200' },
-  'SUCATA':        { label: 'Sucata',        color: 'text-gray-900',    bg: 'bg-gray-200',   border: 'border-gray-300' }
+  'SUCATA':        { label: 'Sucata',        color: 'text-gray-900',    bg: 'bg-gray-200',   border: 'border-gray-300' },
+  'Sucateado':     { label: 'Sucata',        color: 'text-gray-900',    bg: 'bg-gray-200',   border: 'border-gray-300' }
 };
 
 export const EQ_HEALTH = {
