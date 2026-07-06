@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -24,9 +24,9 @@ router.get('/export', (req: AuthRequest, res) => {
   const filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.sql`;
   const filepath = path.join(os.tmpdir(), filename);
 
-  const command = `pg_dump "${dbUrl}" -F c -f "${filepath}"`;
+  const args = [dbUrl, '-F', 'c', '-f', filepath];
 
-  exec(command, (error, stdout, stderr) => {
+  execFile('pg_dump', args, (error, stdout, stderr) => {
     if (error) {
       console.error('pg_dump error:', error, stderr);
       return res.status(500).json({ error: `Failed to generate backup: ${stderr || error.message}` });
@@ -50,9 +50,9 @@ router.post('/import', upload.single('backup'), (req: AuthRequest, res) => {
   const filepath = req.file.path;
   
   // Use pg_restore with clean option to drop/recreate objects before restoring
-  const command = `pg_restore --clean --if-exists --no-owner --no-privileges -d "${dbUrl}" "${filepath}"`;
+  const args = ['--clean', '--if-exists', '--no-owner', '--no-privileges', '-d', dbUrl, filepath];
 
-  exec(command, (error, stdout, stderr) => {
+  execFile('pg_restore', args, (error, stdout, stderr) => {
     fs.unlink(filepath, () => {}); // Clean up uploaded file
 
     if (error) {

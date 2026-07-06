@@ -56,7 +56,19 @@ export const SettingsPage = () => {
       link.remove();
       toast.success("Backup gerado com sucesso!", { id: 'backup' });
     } catch(err) {
-      toast.error("Erro ao exportar backup: " + (err.response?.data?.error || err.message), { id: 'backup' });
+      let errorMessage = err.message;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          errorMessage = json.error || errorMessage;
+        } catch (e) {
+          // ignore
+        }
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+      toast.error("Erro ao exportar backup: " + errorMessage, { id: 'backup' });
     }
   };
 
