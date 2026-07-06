@@ -22,9 +22,7 @@ router.get('/', async (req, res) => {
     defeitosEmAberto,
     movimentacoesHoje,
     movimentacoesSemana,
-    equipamentosOciosos,
-    groupedLocs,
-    groupedCats
+    equipamentosOciosos
   ] = await Promise.all([
     prisma.equipment.count(),
     prisma.equipment.count({
@@ -48,36 +46,15 @@ router.get('/', async (req, res) => {
           none: { timestamp: { gte: thirtyDaysAgo } }
         }
       }
-    }),
-    prisma.equipment.groupBy({
-      by: ['currentLocation'],
-      _count: { id: true }
-    }),
-    prisma.equipment.groupBy({
-      by: ['category'],
-      _count: { id: true }
     })
   ]);
 
-  // Format the group by data for charts
-  const locDistribution = groupedLocs.map(g => ({
-    name: g.currentLocation || 'Desconhecido',
-    value: g._count.id
-  }));
-
-  const catDistribution = groupedCats.map(g => ({
-    name: g.category || 'Sem Categoria',
-    value: g._count.id
-  }));
-
   res.json({
     totalEquipments,
-    defeitosEmAberto: 0, // Computed on frontend
+    defeitosEmAberto: 0,
     movimentacoesHoje,
     movimentacoesSemana,
-    equipamentosOciosos,
-    locDistribution,
-    catDistribution
+    equipamentosOciosos
   });
 });
 

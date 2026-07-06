@@ -38,6 +38,24 @@ export const Dashboard = ({ eq, onSelect }) => {
     return eq.filter(e => e.currentLocation === 'manutencao' || e.currentLocation === 'laboratorio');
   }, [eq]);
 
+  const locDistribution = useMemo(() => {
+    const data = Object.entries(counts)
+      .map(([k, v]) => ({ name: LOCS[k]?.label || k, value: v }))
+      .filter(x => x.value > 0);
+    return data;
+  }, [counts]);
+
+  const catDistribution = useMemo(() => {
+    const c = {};
+    eq.forEach(e => {
+      const cat = e.category || 'Outros';
+      c[cat] = (c[cat] || 0) + 1;
+    });
+    return Object.entries(c)
+      .map(([k, v]) => ({ name: k, value: v }))
+      .sort((a, b) => b.value - a.value); // Sort descending
+  }, [eq]);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -172,11 +190,11 @@ export const Dashboard = ({ eq, onSelect }) => {
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-700 mb-4 text-center">Distribuição por Localização</h3>
           <div className="h-[250px] w-full">
-            {metrics.locDistribution?.length > 0 ? (
+            {locDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie 
-                    data={metrics.locDistribution} 
+                    data={locDistribution} 
                     dataKey="value" 
                     nameKey="name" 
                     cx="50%" 
@@ -185,7 +203,7 @@ export const Dashboard = ({ eq, onSelect }) => {
                     outerRadius={90}
                     label
                   >
-                    {metrics.locDistribution.map((entry, index) => {
+                    {locDistribution.map((entry, index) => {
                       const color = Object.values(LOCS).find(l => l.label === entry.name)?.color || '#94a3b8';
                       return <Cell key={`cell-${index}`} fill={color} />;
                     })}
@@ -204,9 +222,9 @@ export const Dashboard = ({ eq, onSelect }) => {
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-700 mb-4 text-center">Equipamentos por Categoria</h3>
           <div className="h-[250px] w-full">
-            {metrics.catDistribution?.length > 0 ? (
+            {catDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={metrics.catDistribution}>
+                <BarChart data={catDistribution} margin={{ bottom: 20 }}>
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-30} textAnchor="end" />
                   <YAxis allowDecimals={false} />
                   <Tooltip cursor={{ fill: '#f1f5f9' }} />
