@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import api from '../api';
 import { Modal } from '../components/Modal';
 import { MainLayout } from './MainLayout';
+import { useAuth } from '../contexts/AuthContext';
 
 const PERM_LABELS = {
   'equipment.create': 'Cadastro',
@@ -106,6 +107,7 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
   const [loading, setLoading] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const { user: currentUser, setUser } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -139,6 +141,13 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
         await api.put(`/users/${user.id}`, {
           name: formData.name, initials: formData.initials, roleId: formData.roleId, isActive: formData.isActive, permissions: formData.permissions
         });
+        
+        if (currentUser && currentUser.id === user.id) {
+          const updatedUser = { ...currentUser, name: formData.name, initials: formData.initials, roleId: formData.roleId };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+
         toast.success("Usuário atualizado!");
       } else {
         await api.post('/users', formData);
