@@ -3,27 +3,33 @@ import { authenticate, requirePermission, AuthRequest } from '../middlewares/aut
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import multer from 'multer';
 
 const router = Router();
 router.use(authenticate);
 router.use(requirePermission('settings.manage'));
 
-const upload = multer({ dest: '/tmp/backups/' });
+const backupDir = path.join(os.tmpdir(), 'backups');
+if (!fs.existsSync(backupDir)) {
+  fs.mkdirSync(backupDir, { recursive: true });
+}
+
+const upload = multer({ dest: backupDir });
 
 router.get('/export', (req: AuthRequest, res) => {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return res.status(500).json({ error: 'DATABASE_URL not set' });
 
   const filename = `backup_${new Date().toISOString().replace(/[:.]/g, '-')}.sql`;
-  const filepath = path.join('/tmp', filename);
+  const filepath = path.join(os.tmpdir(), filename);
 
   const command = `pg_dump "${dbUrl}" -F c -f "${filepath}"`;
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
-      console.error('pg_dump error:', error);
-      return res.status(500).json({ error: 'Failed to generate backup' });
+      console.error('pg_dump error:', error, stderr);
+      return res.status(500).json({ error: `Failed to generate backup: ${stderr || error.message}` });
     }
     
     // @ts-ignore
