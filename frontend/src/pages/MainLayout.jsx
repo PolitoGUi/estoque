@@ -177,7 +177,11 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
               className="w-full pl-10 pr-4 py-2 bg-slate-800 text-white md:bg-slate-100 md:text-slate-900 border-transparent rounded-lg text-sm focus:bg-slate-700 md:focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none placeholder:text-slate-500"
             />
           </form>
-          <div className="flex items-center gap-4 text-sm font-semibold text-slate-600 ml-4 relative" ref={notifRef}>
+          <div className="flex items-center gap-2 md:gap-4 text-sm font-semibold text-slate-600 ml-2 md:ml-4 relative" ref={notifRef}>
+            <button onClick={() => setShowPwaModal(true)} className="md:hidden relative p-2 text-pink-500 hover:bg-pink-50 rounded-full transition-colors animate-pulse">
+              <Download size={20} />
+            </button>
+            
             <button onClick={() => setShowNotifs(!showNotifs)} className="relative p-2 text-slate-400 hover:text-amber-500 hover:bg-slate-50 rounded-full transition-colors">
               <Bell size={20} />
               {notifs.length > 0 && (
