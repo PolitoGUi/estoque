@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requirePermission, AuthRequest } from '../middlewares/authMiddleware';
-import prisma from '../models/prismaClient';
+import prisma from '../prismaClient';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
