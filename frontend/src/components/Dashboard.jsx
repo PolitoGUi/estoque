@@ -192,15 +192,15 @@ export const Dashboard = ({ eq, onSelect }) => {
           <div className="h-[250px] w-full">
             {locDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                   <Pie 
                     data={locDistribution} 
                     dataKey="value" 
                     nameKey="name" 
                     cx="50%" 
                     cy="50%" 
-                    innerRadius={60} 
-                    outerRadius={90}
+                    innerRadius={50} 
+                    outerRadius={80}
                     label
                   >
                     {locDistribution.map((entry, index) => {
