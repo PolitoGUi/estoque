@@ -22,7 +22,7 @@ services:
   # 2. FRONTEND SERVICE (STATIC SITE)
   # ==========================================
   - type: web
-    name: assettrack-frontend
+    name: assettrack
     env: static
     rootDir: frontend
     buildCommand: npm install && npm run build
