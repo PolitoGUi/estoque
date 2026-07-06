@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const apiURL = import.meta.env.VITE_API_URL || '/api';
+let apiURL = import.meta.env.VITE_API_URL || '';
+if (apiURL && !apiURL.endsWith('/api')) {
+  apiURL += '/api';
+}
+if (!apiURL) apiURL = '/api';
+
 console.log('🔗 API URL configurada:', apiURL);
 
 const api = axios.create({
