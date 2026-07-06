@@ -1,0 +1,40 @@
+services:
+  # ==========================================
+  # 1. BACKEND SERVICE (API)
+  # ==========================================
+  - type: web
+    name: assettrack-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 3000
+
+  # ==========================================
+  # 2. FRONTEND SERVICE (STATIC SITE)
+  # ==========================================
+  - type: web
+    name: assettrack-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: assettrack-backend
+          envVarKey: RENDER_EXTERNAL_URL
