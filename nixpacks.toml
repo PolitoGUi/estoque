@@ -3,3 +3,4 @@
 
 [phases.setup]
   nixPkgs = ["...", "postgresql"]
+  aptPkgs = ["...", "postgresql-client", "postgresql-client-common"]
