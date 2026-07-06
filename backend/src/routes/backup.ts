@@ -62,28 +62,26 @@ router.post('/import', upload.single('backup'), async (req: AuthRequest, res) =>
     const fileContent = fs.readFileSync(filepath, 'utf-8');
     const backupData = JSON.parse(fileContent);
     
-    // Perform import in a transaction to ensure integrity
-    await prisma.$transaction(async (tx: any) => {
-      // 1. Delete all existing data (in reverse order to respect foreign keys)
-      const reverseModels = [...MODELS].reverse();
-      for (const model of reverseModels) {
-        const delegate = tx[model.charAt(0).toLowerCase() + model.slice(1)];
-        if (delegate && delegate.deleteMany) {
-          await delegate.deleteMany({});
+    // Perform import sequentially (transactions can timeout on Neon/PgBouncer)
+    // 1. Delete all existing data (in reverse order to respect foreign keys)
+    const reverseModels = [...MODELS].reverse();
+    for (const model of reverseModels) {
+      const delegate = (prisma as any)[model.charAt(0).toLowerCase() + model.slice(1)];
+      if (delegate && delegate.deleteMany) {
+        await delegate.deleteMany({});
+      }
+    }
+    
+    // 2. Insert new data
+    for (const model of MODELS) {
+      const data = backupData[model];
+      if (data && data.length > 0) {
+        const delegate = (prisma as any)[model.charAt(0).toLowerCase() + model.slice(1)];
+        if (delegate && delegate.createMany) {
+          await delegate.createMany({ data });
         }
       }
-      
-      // 2. Insert new data
-      for (const model of MODELS) {
-        const data = backupData[model];
-        if (data && data.length > 0) {
-          const delegate = tx[model.charAt(0).toLowerCase() + model.slice(1)];
-          if (delegate && delegate.createMany) {
-            await delegate.createMany({ data });
-          }
-        }
-      }
-    });
+    }
 
     fs.unlink(filepath, () => {}); // Clean up uploaded file
 
