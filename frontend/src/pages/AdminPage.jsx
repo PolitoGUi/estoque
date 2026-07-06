@@ -19,6 +19,85 @@ const PERM_LABELS = {
   'settings.manage': 'Configurações'
 };
 
+const RoleModal = ({ isOpen, onClose, role, onSaved }) => {
+  const [formData, setFormData] = useState({ name: '', description: '', permissions: [] });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (role) {
+      setFormData({
+        name: role.name || '',
+        description: role.description || '',
+        permissions: role.permissions?.map(p => p.permission.name) || []
+      });
+    }
+  }, [role, isOpen]);
+
+  if (!isOpen) return null;
+
+  const togglePerm = (k) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(k) ? prev.permissions.filter(p => p !== k) : [...prev.permissions, k]
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.put(`/roles/${role.id}`, formData);
+      toast.success("Cargo atualizado com sucesso!");
+      onSaved();
+      onClose();
+    } catch (err) {
+      toast.error("Erro ao atualizar cargo");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal title={`Editar Cargo: ${role?.name}`} onClose={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Nome do Cargo</label>
+          <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Descrição</label>
+          <input value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Permissões do Cargo</label>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(PERM_LABELS).map(([k, v]) => (
+              <button type="button" key={k} onClick={() => togglePerm(k)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  formData.permissions.includes(k) 
+                    ? "bg-amber-100 border-amber-300 text-amber-800" 
+                    : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                }`}>
+                {formData.permissions.includes(k) && "✓ "}
+                {v}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">
+            * Alterar as permissões de um cargo afetará automaticamente todos os usuários vinculados a ele.
+          </p>
+        </div>
+        <div className="flex gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onClick={onClose} className="flex-1 py-2 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancelar</button>
+          <button type="submit" disabled={loading} className="flex-1 py-2 font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:opacity-50">Salvar Cargo</button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
   const isEdit = !!user;
   const [formData, setFormData] = useState({
@@ -86,6 +165,9 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
     }
   };
 
+  const selectedRole = roles.find(r => r.id === Number(formData.roleId));
+  const rolePerms = selectedRole?.permissions?.map(p => p.permission.name) || [];
+
   return (
     <Modal title={isEdit ? "Editar Usuário" : "Novo Usuário"} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,22 +217,35 @@ const UserModal = ({ isOpen, onClose, user, roles, onSaved }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Privilégios Adicionais (Tags)</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Privilégios e Tags</label>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(PERM_LABELS).map(([k, v]) => (
-              <button type="button" key={k} onClick={() => togglePerm(k)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  formData.permissions.includes(k) 
-                    ? "bg-amber-100 border-amber-300 text-amber-800" 
+            {Object.entries(PERM_LABELS).map(([k, v]) => {
+              const isBasePerm = rolePerms.includes(k);
+              const isExtraPerm = formData.permissions.includes(k);
+              const isActive = isBasePerm || isExtraPerm;
+              
+              return (
+                <button type="button" key={k} onClick={() => {
+                  if (isBasePerm) {
+                    toast('Esta tag já é nativa do Perfil Base.', { icon: 'ℹ️' });
+                    return;
+                  }
+                  togglePerm(k);
+                }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                    isBasePerm ? "bg-amber-100/50 border-amber-200 text-amber-700/80 cursor-not-allowed" 
+                    : isExtraPerm ? "bg-amber-100 border-amber-400 text-amber-800" 
                     : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                }`}>
-                {formData.permissions.includes(k) && "✓ "}
-                {v}
-              </button>
-            ))}
+                  }`}>
+                  {isActive && "✓ "}
+                  {v}
+                  {isBasePerm && <span className="ml-1 text-[9px] font-normal italic">(Padrão do Cargo)</span>}
+                </button>
+              );
+            })}
           </div>
           <p className="text-[10px] text-slate-400 mt-2">
-            * O Perfil Base já inclui as permissões principais de cada cargo. Adicione tags apenas para privilégios extras (Ex: Operador com acesso a Relatórios).
+            * As tags marcadas como "Padrão do Cargo" são herdadas do Perfil Base selecionado. Adicione tags apenas se precisar conceder acessos extra a este usuário (Ex: Operador com acesso a Relatórios).
           </p>
         </div>
 
@@ -192,9 +287,11 @@ export const AdminPage = () => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal State
+  // Modals
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -228,22 +325,32 @@ export const AdminPage = () => {
     setIsUserModalOpen(true);
   };
 
+  const handleEditRole = (r) => {
+    setEditingRole(r);
+    setIsRoleModalOpen(true);
+  };
+
   return (
     <MainLayout view="admin">
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-800">Painel de Administração</h2>
-            <p className="text-sm text-slate-400 mt-0.5">Gestão de usuários do sistema</p>
+            <div className="flex gap-4 mt-2">
+              <button onClick={() => setTab("users")} className={`text-sm font-semibold border-b-2 pb-1 transition-colors ${tab === "users" ? "border-amber-500 text-amber-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}>Usuários</button>
+              <button onClick={() => setTab("roles")} className={`text-sm font-semibold border-b-2 pb-1 transition-colors ${tab === "roles" ? "border-amber-500 text-amber-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}>Cargos e Permissões</button>
+            </div>
           </div>
-          <button onClick={handleNewUser} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm">
-            <Plus size={15}/> Novo Usuário
-          </button>
+          {tab === "users" && (
+            <button onClick={handleNewUser} className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors shadow-sm">
+              <Plus size={15}/> Novo Usuário
+            </button>
+          )}
         </div>
 
         {loading ? (
           <div className="py-12 text-center text-slate-400 animate-pulse">Carregando dados...</div>
-        ) : (
+        ) : tab === "users" ? (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
             <table className="w-full text-sm">
                 <thead>
@@ -306,6 +413,38 @@ export const AdminPage = () => {
                 </tbody>
               </table>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {roles.map(r => (
+              <div key={r.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-amber-200 transition-colors group">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      <Shield size={16} className="text-amber-500"/> {r.name}
+                    </h3>
+                  </div>
+                  <button onClick={() => handleEditRole(r)} className="p-1.5 text-slate-400 hover:text-amber-600 transition-colors bg-slate-50 hover:bg-amber-50 rounded-lg group-hover:border-amber-200 border border-transparent shadow-sm">
+                    <Edit size={14}/>
+                  </button>
+                </div>
+                <p className="text-sm text-slate-500 mb-6 flex-1">{r.description || "Nenhuma descrição"}</p>
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Tags do Cargo</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {r.permissions?.length > 0 ? (
+                      r.permissions.map(p => (
+                        <span key={p.permission.name} className="bg-amber-50 text-amber-700 border border-amber-100 text-[10px] px-2 py-0.5 rounded font-semibold whitespace-nowrap">
+                          {PERM_LABELS[p.permission.name] || p.permission.name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">Nenhuma permissão associada</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
@@ -315,6 +454,13 @@ export const AdminPage = () => {
         user={editingUser} 
         roles={roles} 
         onSaved={fetchData} 
+      />
+
+      <RoleModal
+        isOpen={isRoleModalOpen}
+        onClose={() => setIsRoleModalOpen(false)}
+        role={editingRole}
+        onSaved={fetchData}
       />
     </MainLayout>
   );

@@ -19,7 +19,41 @@ router.get('/permissions', async (req, res) => {
   res.json(perms);
 });
 
-// Outras rotas CRUD de Role omitidas por brevidade, mas podem ser adicionadas
-// para a gestão completa de permissões via UI.
+router.put('/:id', async (req, res) => {
+  const roleId = Number(req.params.id);
+  const { name, description, permissions } = req.body;
+
+  try {
+    const updatedRole = await prisma.$transaction(async (tx) => {
+      // Update basic info
+      const role = await tx.role.update({
+        where: { id: roleId },
+        data: { name, description }
+      });
+
+      // Update permissions if provided
+      if (Array.isArray(permissions)) {
+        const perms = await tx.permission.findMany({ where: { name: { in: permissions } } });
+        
+        await tx.rolePermission.deleteMany({ where: { roleId } });
+        if (perms.length > 0) {
+          await tx.rolePermission.createMany({
+            data: perms.map(p => ({ roleId, permissionId: p.id }))
+          });
+        }
+      }
+
+      return tx.role.findUnique({
+        where: { id: roleId },
+        include: { permissions: { include: { permission: true } } }
+      });
+    });
+
+    res.json(updatedRole);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao atualizar cargo' });
+  }
+});
 
 export default router;
