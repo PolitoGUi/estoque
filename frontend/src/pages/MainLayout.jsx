@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, User, Wrench, Bell, Check, Trash2 } from 'lucide-react';
+import { Home, Package, MapPin, QrCode, Shield, FileText, Settings, Search, Users, User, Wrench, Bell, Check, Trash2, Download } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
@@ -30,6 +30,7 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
 
   const [notifs, setNotifs] = useState([]);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [showPwaModal, setShowPwaModal] = useState(false);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -140,6 +141,11 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
                 </button>
               </>
             )}
+
+            <button onClick={() => setShowPwaModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors mt-1 text-slate-400 hover:text-white hover:bg-slate-800">
+              <Download size={18} className="text-pink-500" /> Instalar App
+            </button>
           </div>
         </nav>
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
@@ -234,6 +240,46 @@ export const MainLayout = ({ view, setView, setSelEq, children }) => {
           <span className="text-[10px] font-bold mt-1">Perfil</span>
         </button>
       </nav>
+
+      {/* PWA Install Modal */}
+      {showPwaModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex justify-center items-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95">
+            <div className="p-6">
+              <div className="w-12 h-12 bg-pink-100 text-pink-500 rounded-2xl flex items-center justify-center mb-4">
+                <Download size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Instalar Aplicativo (PWA)</h3>
+              <p className="text-sm text-slate-600 mb-6">
+                Para ter uma experiência nativa, sem barras de navegação e com acesso direto da tela inicial:
+              </p>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-bold text-slate-800 text-sm mb-1">🍎 No iPhone (Safari)</h4>
+                  <p className="text-xs text-slate-600">
+                    Toque no botão <span className="font-bold border border-slate-300 rounded px-1">Compartilhar</span> na barra inferior do Safari e selecione 
+                    <strong className="text-slate-800"> "Adicionar à Tela de Início"</strong>.
+                  </p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <h4 className="font-bold text-slate-800 text-sm mb-1">🤖 No Android (Chrome)</h4>
+                  <p className="text-xs text-slate-600">
+                    Geralmente um banner automático aparece no rodapé. Caso não apareça, toque nos <span className="font-bold">3 pontinhos</span> no topo direito e escolha 
+                    <strong className="text-slate-800"> "Adicionar à Tela Inicial"</strong>.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button onClick={() => setShowPwaModal(false)} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors">
+                  Entendi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
