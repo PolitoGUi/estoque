@@ -32,6 +32,8 @@ router.post('/login', async (req, res) => {
   );
 
   // @ts-ignore
+  req.user = { id: user.id };
+  // @ts-ignore
   req.auditInfo = { action: 'LOGIN_SUCCESS', resource: `USER_${user.id}` };
   
   res.json({

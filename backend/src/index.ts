@@ -21,6 +21,7 @@ import streamRoutes from './routes/stream';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1); // Confia no proxy do Render/Railway para pegar o IP real
 app.use(cors());
 app.use(express.json());
 
